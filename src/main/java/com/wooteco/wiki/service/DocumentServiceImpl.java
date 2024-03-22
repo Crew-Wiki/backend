@@ -2,6 +2,7 @@ package com.wooteco.wiki.service;
 
 import com.wooteco.wiki.dto.DocumentCreateRequest;
 import com.wooteco.wiki.dto.DocumentResponse;
+import com.wooteco.wiki.dto.DocumentUpdateRequest;
 import com.wooteco.wiki.entity.Document;
 import com.wooteco.wiki.repository.DocumentRepository;
 import java.time.LocalDateTime;
@@ -32,6 +33,15 @@ public class DocumentServiceImpl implements DocumentService {
     public Optional<DocumentResponse> get(String title) {
         Optional<Document> byTitle = documentRepository.findByTitle(title);
         return byTitle.map(this::mapToResponse);
+    }
+
+    @Override
+    public DocumentResponse put(String title, DocumentUpdateRequest documentUpdateRequest) {
+        Document document = documentRepository.findByTitle(title)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 문서입니다."));
+        document.update(documentUpdateRequest.contents(), documentUpdateRequest.writer());
+
+        return mapToResponse(document);
     }
 
     private DocumentResponse mapToResponse(Document document) {
