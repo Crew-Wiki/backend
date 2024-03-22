@@ -62,13 +62,13 @@ public class DocumentServiceImpl implements DocumentService {
 
         Document document = documentRepository.findByTitle(title)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제목의 문서입니다."));
-        document.update(contents, writer);
+        document.update(contents, writer, LocalDateTime.now());
 
         Log log = Log.builder()
                 .title(title)
                 .contents(contents)
                 .writer(writer)
-                .generateTime(LocalDateTime.now())
+                .generateTime(document.getGenerateTime())
                 .build();
         logRepository.save(log);
 

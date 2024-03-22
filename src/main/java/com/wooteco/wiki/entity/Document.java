@@ -27,8 +27,9 @@ public class Document {
     private String writer;
     private LocalDateTime generateTime;
 
-    public void update(String contents, String writer) {
+    public void update(String contents, String writer, LocalDateTime generateTime) {
         this.contents = contents;
         this.writer = writer;
+        this.generateTime = generateTime;
     }
 }
