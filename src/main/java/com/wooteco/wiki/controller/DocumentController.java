@@ -2,10 +2,10 @@ package com.wooteco.wiki.controller;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import com.wooteco.wiki.dto.DocumentCreateRequest;
+import com.wooteco.wiki.dto.DocumentResponse;
 import com.wooteco.wiki.dto.ErrorResponse;
-import com.wooteco.wiki.dto.PostCreateRequest;
-import com.wooteco.wiki.dto.PostResponse;
-import com.wooteco.wiki.service.PostService;
+import com.wooteco.wiki.service.DocumentService;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,24 +19,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/document")
 @RequiredArgsConstructor
-public class PostController {
+public class DocumentController {
 
-    private final PostService postService;
+    private final DocumentService documentService;
 
     @PostMapping("/{title}")
-    public ResponseEntity<PostResponse> post(@PathVariable String title,
-                                             @RequestBody PostCreateRequest postCreateRequest) {
-        PostResponse post = postService.post(title, postCreateRequest);
-        return ResponseEntity.ok(post);
+    public ResponseEntity<DocumentResponse> post(@PathVariable String title,
+                                                 @RequestBody DocumentCreateRequest documentCreateRequest) {
+        DocumentResponse response = documentService.post(title, documentCreateRequest);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{title}")
     public ResponseEntity<?> get(@PathVariable String title) {
-        Optional<PostResponse> postResponse = postService.get(title);
-        if (postResponse.isEmpty()) {
+        Optional<DocumentResponse> response = documentService.get(title);
+        if (response.isEmpty()) {
             return notFound();
         }
-        return ResponseEntity.ok(postResponse.get());
+        return ResponseEntity.ok(response.get());
     }
 
     private ResponseEntity<ErrorResponse> notFound() {

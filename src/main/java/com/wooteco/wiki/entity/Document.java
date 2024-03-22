@@ -16,11 +16,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Builder
-public class Post {
+public class Document {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long postId;
+    private Long documentId;
     @Column(unique = true)
     private String title;
     private String contents;
