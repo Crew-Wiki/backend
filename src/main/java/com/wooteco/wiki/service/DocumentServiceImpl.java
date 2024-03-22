@@ -4,16 +4,21 @@ import com.wooteco.wiki.dto.DocumentCreateRequest;
 import com.wooteco.wiki.dto.DocumentResponse;
 import com.wooteco.wiki.dto.DocumentUpdateRequest;
 import com.wooteco.wiki.entity.Document;
+import com.wooteco.wiki.entity.Log;
 import com.wooteco.wiki.repository.DocumentRepository;
+import com.wooteco.wiki.repository.LogRepository;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class DocumentServiceImpl implements DocumentService {
     private final DocumentRepository documentRepository;
+    private final LogRepository logRepository;
 
     @Override
     public DocumentResponse post(String title, DocumentCreateRequest documentCreateRequest) {
@@ -25,8 +30,14 @@ public class DocumentServiceImpl implements DocumentService {
                 .writer(writer)
                 .generateTime(LocalDateTime.now())
                 .build();
-        Document save = documentRepository.save(document);
-        return mapToResponse(save);
+        try {
+            Document save = documentRepository.save(document);
+            Log log = new Log(null, title, contents, writer, save.getGenerateTime());
+            logRepository.save(log);
+            return mapToResponse(save);
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("제목이 겹치는 문서가 있습니다.");
+        }
     }
 
     @Override
