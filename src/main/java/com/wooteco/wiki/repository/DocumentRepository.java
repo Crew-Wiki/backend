@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DocumentRepository extends JpaRepository<Document, Long> {
     Optional<Document> findByTitle(String title);
+
+    boolean existsByTitle(String title);
 }

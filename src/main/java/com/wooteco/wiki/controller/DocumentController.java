@@ -25,10 +25,9 @@ public class DocumentController {
 
     private final DocumentService documentService;
 
-    @PostMapping("/{title}")
-    public ResponseEntity<DocumentResponse> post(@PathVariable String title,
-                                                 @RequestBody DocumentCreateRequest documentCreateRequest) {
-        DocumentResponse response = documentService.post(title, documentCreateRequest);
+    @PostMapping("")
+    public ResponseEntity<DocumentResponse> post(@RequestBody DocumentCreateRequest documentCreateRequest) {
+        DocumentResponse response = documentService.post(documentCreateRequest);
         return ResponseEntity.ok(response);
     }
 
