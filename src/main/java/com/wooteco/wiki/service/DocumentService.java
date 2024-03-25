@@ -1,9 +1,9 @@
 package com.wooteco.wiki.service;
 
 import com.wooteco.wiki.dto.DocumentCreateRequest;
+import com.wooteco.wiki.dto.DocumentFindAllByRecentResponse;
 import com.wooteco.wiki.dto.DocumentResponse;
 import com.wooteco.wiki.dto.DocumentUpdateRequest;
-import com.wooteco.wiki.dto.LogFindAllResponse;
 import java.util.Optional;
 
 public interface DocumentService {
@@ -13,5 +13,5 @@ public interface DocumentService {
 
     DocumentResponse put(String title, DocumentUpdateRequest documentUpdateRequest);
 
-    LogFindAllResponse getLogs();
+    DocumentFindAllByRecentResponse getRecentDocuments();
 }

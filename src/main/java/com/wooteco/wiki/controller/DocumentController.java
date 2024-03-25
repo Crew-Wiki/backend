@@ -3,11 +3,11 @@ package com.wooteco.wiki.controller;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import com.wooteco.wiki.dto.DocumentCreateRequest;
+import com.wooteco.wiki.dto.DocumentFindAllByRecentResponse;
 import com.wooteco.wiki.dto.DocumentResponse;
 import com.wooteco.wiki.dto.DocumentUpdateRequest;
 import com.wooteco.wiki.dto.ErrorResponse;
 import com.wooteco.wiki.dto.LogDetailResponse;
-import com.wooteco.wiki.dto.LogFindAllResponse;
 import com.wooteco.wiki.service.DocumentService;
 import com.wooteco.wiki.service.LogService;
 import java.util.Optional;
@@ -57,9 +57,9 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/log")
-    public ResponseEntity<LogFindAllResponse> getLogs() {
-        LogFindAllResponse response = documentService.getLogs();
+    @GetMapping("/recent")
+    public ResponseEntity<DocumentFindAllByRecentResponse> getRecentDocuments() {
+        DocumentFindAllByRecentResponse response = documentService.getRecentDocuments();
         return ResponseEntity.ok(response);
     }
 

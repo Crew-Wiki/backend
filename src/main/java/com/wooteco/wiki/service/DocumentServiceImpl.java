@@ -1,9 +1,9 @@
 package com.wooteco.wiki.service;
 
 import com.wooteco.wiki.dto.DocumentCreateRequest;
+import com.wooteco.wiki.dto.DocumentFindAllByRecentResponse;
 import com.wooteco.wiki.dto.DocumentResponse;
 import com.wooteco.wiki.dto.DocumentUpdateRequest;
-import com.wooteco.wiki.dto.LogFindAllResponse;
 import com.wooteco.wiki.entity.Document;
 import com.wooteco.wiki.entity.Log;
 import com.wooteco.wiki.repository.DocumentRepository;
@@ -78,9 +78,9 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public LogFindAllResponse getLogs() {
+    public DocumentFindAllByRecentResponse getRecentDocuments() {
         List<Document> documents = documentRepository.findAllByOrderByGenerateTimeDesc();
-        return LogFindAllResponse.of(documents);
+        return DocumentFindAllByRecentResponse.of(documents);
     }
 
     private DocumentResponse mapToResponse(Document document) {
