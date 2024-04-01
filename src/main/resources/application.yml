@@ -1,13 +1,7 @@
 spring:
   application:
     name: wiki
-  jpa: #jpa 종류
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true #이쁘게 해줌
-logging:
-  level:
-    org.hibernate.SQL: trace #콘솔에 남기는게 아니라 로그로 남음.
-    org.hibernate.type: trace #바인딩된 파라미터까지 볼 수 있음
+  profiles:
+    group:
+      local: local, common
+      product: product, common

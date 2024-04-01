@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <property name="logPath" value="./wiki_log"/>
+    <property name="fileName" value="application_log"/>
+    <property name="maxHistory" value="7"/>
+    <property name="maxFileSize" value="5KB"/>
+    <property name="totalSizeCap" value="1GB"/>
+    <property name="logPattern"
+              value="[%d{yyyy-MM-dd HH:mm:ss}:%-4relative] %green([%thread]) %highlight(%-5level) [%C.%M:%line] - %msg%n"/>
+
+    <!-- Log Appender Module -->
+    <springProfile name="local">
+        <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+        <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </appender>
+        <root>
+            <appender-ref ref="console"/>
+        </root>
+    </springProfile>
+
+    <!-- file Appender Module -->
+    <springProfile name="product">
+        <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${logPath}//${fileName}.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>application.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>5GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>${logPattern}</pattern>
+            </encoder>
+        </appender>
+        <root>
+            <appender-ref ref="file"/>
+        </root>
+    </springProfile>
+</configuration>
