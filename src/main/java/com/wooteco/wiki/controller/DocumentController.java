@@ -1,15 +1,27 @@
 package com.wooteco.wiki.controller;
 
-import com.wooteco.wiki.dto.*;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
+import com.wooteco.wiki.dto.DocumentCreateRequest;
+import com.wooteco.wiki.dto.DocumentFindAllByRecentResponse;
+import com.wooteco.wiki.dto.DocumentResponse;
+import com.wooteco.wiki.dto.DocumentUpdateRequest;
+import com.wooteco.wiki.dto.ErrorResponse;
+import com.wooteco.wiki.dto.LogDetailResponse;
+import com.wooteco.wiki.dto.LogResponse;
 import com.wooteco.wiki.service.DocumentService;
 import com.wooteco.wiki.service.LogService;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
-
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/document")
@@ -44,7 +56,7 @@ public class DocumentController {
     }
 
     @GetMapping("/{title}/log")
-    public ResponseEntity<?> getLogs(@PathVariable String title) {
+    public ResponseEntity<List<LogResponse>> getLogs(@PathVariable String title) {
         return ResponseEntity.ok(logService.getLogs(title));
     }
 

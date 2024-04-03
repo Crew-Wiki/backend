@@ -8,14 +8,13 @@ import com.wooteco.wiki.entity.Document;
 import com.wooteco.wiki.entity.Log;
 import com.wooteco.wiki.repository.DocumentRepository;
 import com.wooteco.wiki.repository.LogRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -49,6 +48,7 @@ public class DocumentServiceImpl implements DocumentService {
                 .title(title)
                 .contents(contents)
                 .writer(writer)
+                .documentBytes(documentBytes)
                 .generateTime(save.getGenerateTime())
                 .build();
         logRepository.save(log);
@@ -88,6 +88,7 @@ public class DocumentServiceImpl implements DocumentService {
                 .title(title)
                 .contents(contents)
                 .writer(writer)
+                .documentBytes(documentBytes)
                 .generateTime(document.getGenerateTime())
                 .build();
         logRepository.save(log);

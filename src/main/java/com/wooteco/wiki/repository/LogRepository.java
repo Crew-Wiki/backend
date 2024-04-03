@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LogRepository extends JpaRepository<Log, Long> {
 
-    List<Log> findAllByTitle(String title);
+    List<Log> findAllByTitleOrderByLogIdAsc(String title);
 }

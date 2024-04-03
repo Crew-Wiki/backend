@@ -22,5 +22,6 @@ public class Log {
     private String title;
     private String contents;
     private String writer;
+    private Long documentBytes;
     private LocalDateTime generateTime;
 }

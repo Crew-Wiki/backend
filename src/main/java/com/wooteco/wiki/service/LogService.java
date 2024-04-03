@@ -5,6 +5,8 @@ import com.wooteco.wiki.dto.LogResponse;
 import com.wooteco.wiki.entity.Log;
 import com.wooteco.wiki.repository.LogRepository;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +25,9 @@ public class LogService {
     }
 
     public List<LogResponse> getLogs(String title) {
-        List<Log> logs = logRepository.findAllByTitle(title);
-
-        return logs.stream()
-                .map(log -> new LogResponse(log.getTitle(), log.getGenerateTime()))
-                .toList();
+        List<Log> logs = logRepository.findAllByTitleOrderByLogIdAsc(title);
+        return IntStream.range(0, logs.size())
+                .mapToObj(i -> LogResponse.of(logs.get(i), (long) (i + 1)))
+                .collect(Collectors.toList());
     }
 }
