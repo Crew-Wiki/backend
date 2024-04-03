@@ -27,6 +27,7 @@ public class DocumentServiceImpl implements DocumentService {
         String title = documentCreateRequest.title();
         String contents = documentCreateRequest.contents();
         String writer = documentCreateRequest.writer();
+        Long documentBytes = documentCreateRequest.documentBytes();
 
         if (documentRepository.existsByTitle(title)) {
             throw new IllegalStateException("제목이 겹치는 문서가 있습니다.");
@@ -36,6 +37,7 @@ public class DocumentServiceImpl implements DocumentService {
                 .title(title)
                 .contents(contents)
                 .writer(writer)
+                .documentBytes(documentBytes)
                 .generateTime(LocalDateTime.now())
                 .build();
         Document save = documentRepository.save(document);
@@ -61,10 +63,11 @@ public class DocumentServiceImpl implements DocumentService {
     public DocumentResponse put(String title, DocumentUpdateRequest documentUpdateRequest) {
         String contents = documentUpdateRequest.contents();
         String writer = documentUpdateRequest.writer();
+        Long documentBytes = documentUpdateRequest.documentBytes();
 
         Document document = documentRepository.findByTitle(title)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 제목의 문서입니다."));
-        document.update(contents, writer, LocalDateTime.now());
+        document.update(contents, writer, documentBytes, LocalDateTime.now());
 
         Log log = Log.builder()
                 .title(title)

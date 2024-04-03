@@ -25,11 +25,13 @@ public class Document {
     private String title;
     private String contents;
     private String writer;
+    private Long documentBytes;
     private LocalDateTime generateTime;
 
-    public void update(String contents, String writer, LocalDateTime generateTime) {
+    public void update(String contents, String writer, Long documentBytes, LocalDateTime generateTime) {
         this.contents = contents;
         this.writer = writer;
+        this.documentBytes = documentBytes;
         this.generateTime = generateTime;
     }
 }
