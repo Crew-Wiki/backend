@@ -9,6 +9,7 @@ import com.wooteco.wiki.dto.DocumentUpdateRequest;
 import com.wooteco.wiki.dto.ErrorResponse;
 import com.wooteco.wiki.dto.LogDetailResponse;
 import com.wooteco.wiki.dto.LogResponse;
+import com.wooteco.wiki.service.DocumentSearchService;
 import com.wooteco.wiki.service.DocumentService;
 import com.wooteco.wiki.service.LogService;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,6 +32,7 @@ public class DocumentController {
 
     private final DocumentService documentService;
     private final LogService logService;
+    private final DocumentSearchService documentSearchService;
 
     @PostMapping("")
     public ResponseEntity<DocumentResponse> post(@RequestBody DocumentCreateRequest documentCreateRequest) {
@@ -44,6 +47,11 @@ public class DocumentController {
             return notFound();
         }
         return ResponseEntity.ok(response.get());
+    }
+
+    private ResponseEntity<ErrorResponse> notFound() {
+        return ResponseEntity.status(NOT_FOUND)
+                .body(new ErrorResponse("없는 문서입니다."));
     }
 
     @GetMapping("/{title}")
@@ -79,8 +87,8 @@ public class DocumentController {
         return ResponseEntity.ok(response);
     }
 
-    private ResponseEntity<ErrorResponse> notFound() {
-        return ResponseEntity.status(NOT_FOUND)
-                .body(new ErrorResponse("없는 문서입니다."));
+    @GetMapping("/search")
+    public List<String> search(@RequestParam String keyWord) {
+        return documentSearchService.search(keyWord);
     }
 }
