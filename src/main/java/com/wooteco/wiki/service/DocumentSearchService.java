@@ -12,7 +12,7 @@ public class DocumentSearchService {
     private final DocumentRepository documentRepository;
 
     public List<String> search(String keyWord) {
-        return documentRepository.findAllByContentsStartingWith(keyWord)
+        return documentRepository.findAllByTitleStartingWith(keyWord)
                 .stream()
                 .map(Title::getTitle)
                 .toList();

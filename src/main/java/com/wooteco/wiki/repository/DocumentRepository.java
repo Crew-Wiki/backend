@@ -13,5 +13,5 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     List<Document> findAllByOrderByGenerateTimeDesc();
 
-    List<Title> findAllByContentsStartingWith(String keyWord);
+    List<Title> findAllByTitleStartingWith(String keyWord);
 }
