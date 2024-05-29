@@ -1,12 +1,9 @@
 package com.wooteco.wiki;
 
+import com.wooteco.wiki.testinfra.ActiveProfileSpringBootTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@ActiveProfiles(profiles = {"local", "info-logging"})
-class WikiApplicationTests {
+class WikiApplicationTests extends ActiveProfileSpringBootTest {
 
     @Test
     void contextLoads() {

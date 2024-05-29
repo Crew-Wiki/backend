@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: wiki
+  profiles:
+    group:
+      local: local, common
+      product: product, common
