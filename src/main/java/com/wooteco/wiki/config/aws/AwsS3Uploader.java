@@ -2,7 +2,6 @@ package com.wooteco.wiki.config.aws;
 
 import java.time.Duration;
 import java.util.Map;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +27,11 @@ public class AwsS3Uploader {
 
     /**
      * presigned url을 생성해 주는 메소드. bucket v3에 생성해 줌
-     * @param imageExtension 이미지의 확장자
+     * @param fileKey 이미지의 확장자
      * @return upload url, public url
      */
-    public String createPresignedUrl(String imageExtension) {
-
-        String keyName = UUID.randomUUID() + "." + imageExtension;
-        keyName = keyName.replace("-", "");
-        String contentType = "image/" + imageExtension;
+    public String createPresignedUrl(String fileKey) {
+        String contentType = "image/jpeg";
         Map<String, String> metadata = Map.of(
                 "fileType", contentType,
                 "Content-Type", contentType
@@ -43,7 +39,7 @@ public class AwsS3Uploader {
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucket)
-                .key(keyName)
+                .key(fileKey)
                 .metadata(metadata)
                 .build();
 
