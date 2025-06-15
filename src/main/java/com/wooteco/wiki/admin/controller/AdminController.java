@@ -4,10 +4,11 @@ import com.wooteco.wiki.admin.domain.dto.AdminResponse;
 import com.wooteco.wiki.admin.domain.dto.LoginRequest;
 import com.wooteco.wiki.global.auth.domain.dto.TokenResponse;
 import com.wooteco.wiki.global.auth.service.AuthService;
+import com.wooteco.wiki.global.common.ApiResponse;
+import com.wooteco.wiki.global.common.ApiResponseGenerator;
 import java.time.Duration;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,7 @@ public class AdminController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@RequestBody LoginRequest loginRequest) {
+    public ApiResponse<ApiResponse.SuccessBody<Void>> login(@RequestBody LoginRequest loginRequest) {
         TokenResponse tokenResponse = authService.login(loginRequest);
         ResponseCookie cookie = ResponseCookie
                 .from(TOKEN_NAME_FIELD, tokenResponse.accessToken())
@@ -37,19 +38,19 @@ public class AdminController {
                 .maxAge(Duration.ofDays(30))
                 .sameSite("Lax")
                 .build();
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
+        return ApiResponseGenerator.success(HttpStatus.OK, "로그인이 완료되었습니다.");
     }
 
     @GetMapping("/login/check")
-    public ResponseEntity<AdminResponse> checkAuth(@CookieValue(name = TOKEN_NAME_FIELD) String token) {
+    public ApiResponse<ApiResponse.SuccessBody<AdminResponse>> checkAuth(
+            @CookieValue(name = TOKEN_NAME_FIELD) String token) {
         AdminResponse adminResponse = authService.findMemberByToken(token);
-        return ResponseEntity.ok().body(adminResponse);
+        return ApiResponseGenerator.success(adminResponse, HttpStatus.OK, "인증이 확인되었습니다.");
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@CookieValue(name = TOKEN_NAME_FIELD) String token) {
+    public ApiResponse<ApiResponse.SuccessBody<Void>> logout(@CookieValue(name = TOKEN_NAME_FIELD) String token) {
         authService.findMemberByToken(token);
-
         ResponseCookie cookie = ResponseCookie
                 .from(TOKEN_NAME_FIELD, "")
                 .domain("localhost")
@@ -59,7 +60,6 @@ public class AdminController {
                 .maxAge(Duration.ofDays(0))
                 .sameSite("Strict")
                 .build();
-
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
+        return ApiResponseGenerator.success(HttpStatus.OK, "로그아웃이 완료되었습니다.");
     }
 }
