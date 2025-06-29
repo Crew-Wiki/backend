@@ -28,7 +28,7 @@ public class Log {
     private String writer;
 
     @Column(name = "document_bytes")
-    private long documentBytes;
+    private Long documentBytes;
 
     @Column(name = "generate_time")
     private LocalDateTime generateTime;
@@ -41,7 +41,8 @@ public class Log {
     protected Log() {
     }
 
-    public Log(String title, String contents, String writer, long documentBytes, LocalDateTime generateTime, Document document) {
+    public Log(String title, String contents, String writer, long documentBytes, LocalDateTime generateTime,
+               Document document) {
         this.title = title;
         this.contents = contents;
         this.writer = writer;

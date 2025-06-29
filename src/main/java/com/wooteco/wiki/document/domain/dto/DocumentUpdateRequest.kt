@@ -5,4 +5,6 @@ data class DocumentUpdateRequest(
     val contents: String,
     val writer: String,
     val documentBytes: Long,
+    val uuid: String
 )
+

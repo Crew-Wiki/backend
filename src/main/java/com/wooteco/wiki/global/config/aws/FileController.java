@@ -1,5 +1,8 @@
 package com.wooteco.wiki.global.config.aws;
 
+import com.wooteco.wiki.global.common.ApiResponse;
+import com.wooteco.wiki.global.common.ApiResponseGenerator;
+import com.wooteco.wiki.global.config.aws.dto.PresignedUrlResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -12,9 +15,10 @@ public class FileController {
     private final AwsS3Uploader awsS3Uploader;
 
     @GetMapping("/upload/**")
-    public String upload(HttpServletRequest request) throws IOException {
+    public ApiResponse<ApiResponse.SuccessBody<PresignedUrlResponse>> upload(HttpServletRequest request)
+            throws IOException {
         String fileKey = request.getRequestURI().substring("/upload/".length());
-        return awsS3Uploader.createPresignedUrl(fileKey).toString();
+        return ApiResponseGenerator.success(new PresignedUrlResponse(awsS3Uploader.createPresignedUrl(fileKey)));
     }
 }
 

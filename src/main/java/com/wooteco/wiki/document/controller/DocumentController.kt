@@ -79,12 +79,11 @@ class DocumentController(
         return ApiResponseGenerator.success(logDetail)
     }
 
-    @PutMapping("/{uuidText}")
+    @PutMapping
     fun put(
-        @PathVariable uuidText: String,
         @RequestBody documentUpdateRequest: DocumentUpdateRequest
     ): ApiResponse<ApiResponse.SuccessBody<DocumentResponse>> {
-        val response = documentService.put(uuidText, documentUpdateRequest)
+        val response = documentService.put(documentUpdateRequest.uuid, documentUpdateRequest)
         return ApiResponseGenerator.success(response)
     }
 
