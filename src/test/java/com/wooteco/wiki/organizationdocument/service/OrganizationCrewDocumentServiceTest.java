@@ -1,11 +1,23 @@
 package com.wooteco.wiki.organizationdocument.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.wooteco.wiki.global.exception.ErrorCode;
+import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
+import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
+import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
+import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
 import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
+import com.wooteco.wiki.organizationevent.domain.OrganizationEvent;
+import com.wooteco.wiki.organizationevent.fixture.OrganizationEventFixture;
+import com.wooteco.wiki.organizationevent.repository.OrganizationEventRepository;
+import java.util.UUID;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,6 +34,9 @@ class OrganizationCrewDocumentServiceTest {
 
     @Autowired
     private OrganizationDocumentService organizationDocumentService;
+
+    @Autowired
+    private OrganizationEventRepository organizationEventRepository;
 
     @DisplayName("조직 문서를 수정할 때")
     @Nested
@@ -54,6 +69,60 @@ class OrganizationCrewDocumentServiceTest {
                 softly.assertThat(foundOrganizationDocument.getWriter()).isEqualTo(updateWriter);
                 softly.assertThat(foundOrganizationDocument.getDocumentBytes()).isEqualTo(updateDocumentBytes);
             });
+        }
+    }
+
+    @DisplayName("조직 문서를 조회할 때")
+    @Nested
+    class Find {
+
+        @DisplayName("올바른 값으로 조회된다.")
+        @Test
+        void updateOrganizationDocument_success_byValidData() {
+            // given
+            UUID uuid = UUID.randomUUID();
+            OrganizationDocument organizationDocument = OrganizationDocumentFixture
+                    .create("title", "contents", "writer", 15L,uuid);
+            organizationDocumentRepository.save(organizationDocument);
+            OrganizationEvent organizationEvent = OrganizationEventFixture.createDefault(organizationDocument);
+            organizationEventRepository.save(organizationEvent);
+
+            // when
+            OrganizationDocumentAndEventResponse organizationDocumentAndEventResponse = organizationDocumentService.findByUuid(uuid);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(organizationDocumentAndEventResponse.title()).isEqualTo("title");
+                softly.assertThat(organizationDocumentAndEventResponse.contents()).isEqualTo("contents");
+                softly.assertThat(organizationDocumentAndEventResponse.writer()).isEqualTo("writer");
+                softly.assertThat(organizationDocumentAndEventResponse.organizationDocumentUuid()).isEqualTo(uuid);
+                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().size()).isEqualTo(1);
+                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().getFirst().title()).isEqualTo("defaultTitle");
+            });
+        }
+    }
+
+    @DisplayName("조직 문서를 생성할 때")
+    @Nested
+    class Create {
+
+        @DisplayName("이미 있는 문서 이름이라면 예외가 발생한다.")
+        @Test
+        void updateOrganizationDocument_success_byValidData() {
+            // given
+            UUID uuid = UUID.randomUUID();
+            OrganizationDocument organizationDocument = OrganizationDocumentFixture
+                    .create("title", "contents", "writer", 15L,uuid);
+            organizationDocumentRepository.save(organizationDocument);
+            OrganizationEvent organizationEvent = OrganizationEventFixture.createDefault(organizationDocument);
+            organizationEventRepository.save(organizationEvent);
+
+            // when
+            OrganizationDocumentCreateRequest organizationDocumentCreateRequest = new OrganizationDocumentCreateRequest("title", "contents", "writer", 15L, UUID.randomUUID());
+
+            WikiException ex = assertThrows(WikiException.class,
+                    () -> organizationDocumentService.create(organizationDocumentCreateRequest));
+            Assertions.assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_DUPLICATE);
         }
     }
 }
