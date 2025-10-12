@@ -15,7 +15,7 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
 
     Boolean existsByTitle(String title);
 
-    List<Document> findAllByTitleStartingWith(String keyWord);
+    List<Document> findAllByTitleStartingWithOrderByTitle(String keyWord);
 
     Optional<Document> findByUuid(UUID uuid);
 

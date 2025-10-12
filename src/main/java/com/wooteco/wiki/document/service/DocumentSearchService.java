@@ -16,7 +16,7 @@ public class DocumentSearchService {
 
     @Transactional(readOnly = true)
     public List<DocumentSearchResponse> search(String keyWord) {
-        return documentRepository.findAllByTitleStartingWith(keyWord)
+        return documentRepository.findAllByTitleStartingWithOrderByTitle(keyWord)
                 .stream()
                 .map(document -> new DocumentSearchResponse(
                         document.getTitle(),
