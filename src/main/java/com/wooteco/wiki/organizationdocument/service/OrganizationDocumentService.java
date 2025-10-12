@@ -11,7 +11,6 @@ import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpd
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
-import com.wooteco.wiki.organizationevent.domain.OrganizationEvent;
 import com.wooteco.wiki.organizationevent.dto.response.OrganizationEventResponse;
 import com.wooteco.wiki.organizationevent.repository.OrganizationEventRepository;
 import java.time.LocalDateTime;
@@ -34,14 +33,7 @@ public class OrganizationDocumentService {
         if (documentRepository.existsByTitle(organizationDocumentCreateRequest.title())) {
             throw new WikiException(ErrorCode.DOCUMENT_DUPLICATE);
         }
-
-        OrganizationDocument organizationDocument = new OrganizationDocument(
-                organizationDocumentCreateRequest.title(),
-                organizationDocumentCreateRequest.contents(),
-                organizationDocumentCreateRequest.writer(),
-                organizationDocumentCreateRequest.documentBytes(),
-                organizationDocumentCreateRequest.uuid()
-        );
+        OrganizationDocument organizationDocument = organizationDocumentCreateRequest.toOrganizationDocument();
         organizationDocumentRepository.save(organizationDocument);
         return new OrganizationDocumentResponse(organizationDocument);
     }
@@ -64,7 +56,8 @@ public class OrganizationDocumentService {
     @Transactional(readOnly = true)
     public OrganizationDocumentAndEventResponse findByUuid(UUID uuidText) {
         OrganizationDocument organizationDocument = getOrganizationDocument(uuidText);
-        List<OrganizationEventResponse> organizationEventResponses = organizationEventRepository.findAllByOrganizationDocumentUuid(uuidText)
+        List<OrganizationEventResponse> organizationEventResponses = organizationEventRepository.findAllByOrganizationDocumentUuid(
+                        uuidText)
                 .stream()
                 .map(OrganizationEventResponse::new)
                 .toList();
