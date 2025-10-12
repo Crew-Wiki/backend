@@ -9,18 +9,16 @@ import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@RequiredArgsConstructor
 @Service
 @Transactional
 public class DocumentSearchService {
 
     private final DocumentRepository documentRepository;
-
-    public DocumentSearchService(DocumentRepository documentRepository) {
-        this.documentRepository = documentRepository;
-    }
 
     @Transactional(readOnly = true)
     public List<DocumentSearchResponse> search(String keyWord) {
