@@ -1,6 +1,5 @@
 package com.wooteco.wiki.organizationdocument.service;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -10,7 +9,6 @@ import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
-import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
 import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
 import com.wooteco.wiki.organizationevent.domain.OrganizationEvent;
@@ -78,17 +76,18 @@ class OrganizationCrewDocumentServiceTest {
 
         @DisplayName("올바른 값으로 조회된다.")
         @Test
-        void updateOrganizationDocument_success_byValidData() {
+        void find_success_byValidData() {
             // given
             UUID uuid = UUID.randomUUID();
             OrganizationDocument organizationDocument = OrganizationDocumentFixture
-                    .create("title", "contents", "writer", 15L,uuid);
+                    .create("title", "contents", "writer", 15L, uuid);
             organizationDocumentRepository.save(organizationDocument);
             OrganizationEvent organizationEvent = OrganizationEventFixture.createDefault(organizationDocument);
             organizationEventRepository.save(organizationEvent);
 
             // when
-            OrganizationDocumentAndEventResponse organizationDocumentAndEventResponse = organizationDocumentService.findByUuid(uuid);
+            OrganizationDocumentAndEventResponse organizationDocumentAndEventResponse = organizationDocumentService.findByUuid(
+                    uuid);
 
             // then
             assertSoftly(softly -> {
@@ -96,8 +95,10 @@ class OrganizationCrewDocumentServiceTest {
                 softly.assertThat(organizationDocumentAndEventResponse.contents()).isEqualTo("contents");
                 softly.assertThat(organizationDocumentAndEventResponse.writer()).isEqualTo("writer");
                 softly.assertThat(organizationDocumentAndEventResponse.organizationDocumentUuid()).isEqualTo(uuid);
-                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().size()).isEqualTo(1);
-                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().getFirst().title()).isEqualTo("defaultTitle");
+                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().size())
+                        .isEqualTo(1);
+                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().getFirst().title())
+                        .isEqualTo("defaultTitle");
             });
         }
     }
@@ -108,17 +109,18 @@ class OrganizationCrewDocumentServiceTest {
 
         @DisplayName("이미 있는 문서 이름이라면 예외가 발생한다.")
         @Test
-        void updateOrganizationDocument_success_byValidData() {
+        void create_success_byValidData() {
             // given
             UUID uuid = UUID.randomUUID();
             OrganizationDocument organizationDocument = OrganizationDocumentFixture
-                    .create("title", "contents", "writer", 15L,uuid);
+                    .create("title", "contents", "writer", 15L, uuid);
             organizationDocumentRepository.save(organizationDocument);
             OrganizationEvent organizationEvent = OrganizationEventFixture.createDefault(organizationDocument);
             organizationEventRepository.save(organizationEvent);
 
             // when
-            OrganizationDocumentCreateRequest organizationDocumentCreateRequest = new OrganizationDocumentCreateRequest("title", "contents", "writer", 15L, UUID.randomUUID());
+            OrganizationDocumentCreateRequest organizationDocumentCreateRequest = new OrganizationDocumentCreateRequest(
+                    "title", "contents", "writer", 15L, UUID.randomUUID());
 
             WikiException ex = assertThrows(WikiException.class,
                     () -> organizationDocumentService.create(organizationDocumentCreateRequest));
