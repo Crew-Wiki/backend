@@ -32,7 +32,7 @@ public class OrganizationDocumentController {
         return ApiResponseGenerator.success(organizationDocumentService.findByUuid(uuidText));
     }
 
-    @Operation(summary = "조직 위키 글 생성", description = "조직 위키 글을 생성합니다.")
+    @Operation(summary = "조직 위키 글 생성 및 연결", description = "조직 위키 글을 생성하며 크루 문서와 연결합니다.")
     @PostMapping
     public ApiResponse<SuccessBody<OrganizationDocumentResponse>> createOrganizationDocumentContents(
             @RequestBody OrganizationDocumentCreateRequest organizationDocumentCreateRequest) {

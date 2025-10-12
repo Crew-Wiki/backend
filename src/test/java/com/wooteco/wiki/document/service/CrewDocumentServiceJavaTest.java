@@ -5,7 +5,6 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
-import com.wooteco.wiki.document.dto.DocumentOrganizationMappingAddRequest;
 import com.wooteco.wiki.document.fixture.DocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
@@ -95,49 +94,6 @@ class CrewDocumentServiceJavaTest {
             // when & then
             WikiException ex = assertThrows(WikiException.class,
                     () -> documentService.searchOrganizationDocument(UUID.randomUUID()));
-            Assertions.assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_NOT_FOUND);
-        }
-    }
-
-    @DisplayName("특정 문서에 대해 조직 문서를 추가할 때에")
-    @Nested
-    class addOrganizationCrewDocument {
-
-        private DocumentOrganizationMappingAddRequest documentOrganizationMappingAddRequest;
-
-        @BeforeEach
-        void setUp() {
-            documentOrganizationMappingAddRequest = OrganizationDocumentFixture.createDocumentOrganizationDocumentCreateRequest(
-                    "title1", "defaultContents", "defaultWriter", 10L, UUID.randomUUID());
-        }
-
-        @DisplayName("존재하는 특정 문서의 uuid로 요청한다면, 조직 문서가 추가된다")
-        @Test
-        void addOrganizationDocument_success_byExistingDocumentUuid() {
-            // when
-            documentService.addOrganizationDocument(savedDocumentUuid,
-                    documentOrganizationMappingAddRequest);
-
-            // then
-            List<OrganizationDocumentResponse> organizationDocumentResponsesByDocument = documentOrganizationLinkService.findOrganizationDocumentResponsesByDocument(
-                    savedCrewDocument);
-            assertSoftly(softy -> {
-                        softy.assertThat(organizationDocumentResponsesByDocument.size()).isEqualTo(1);
-                        softy.assertThat(organizationDocumentResponsesByDocument.stream()
-                                .map(OrganizationDocumentResponse::title)
-                        ).containsExactlyInAnyOrder("title1");
-                    }
-            );
-        }
-
-
-        @DisplayName("존재하지 않는 특정 문서의 Uuid로 요청한다면 예외가 발생한다 : DOCUMENT_NOT_FOUND")
-        @Test
-        void addOrganizationDocument_error_byNonExistingDocumentUuid() {
-            // when & then
-            WikiException ex = assertThrows(WikiException.class,
-                    () -> documentService.addOrganizationDocument(UUID.randomUUID(),
-                            documentOrganizationMappingAddRequest));
             Assertions.assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_NOT_FOUND);
         }
     }

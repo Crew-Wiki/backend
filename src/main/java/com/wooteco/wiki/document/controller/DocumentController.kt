@@ -2,7 +2,6 @@ package com.wooteco.wiki.document.controller
 
 import com.wooteco.wiki.document.domain.Document
 import com.wooteco.wiki.document.domain.dto.*
-import com.wooteco.wiki.document.dto.DocumentOrganizationMappingAddRequest
 import com.wooteco.wiki.document.service.DocumentSearchService
 import com.wooteco.wiki.document.service.DocumentService
 import com.wooteco.wiki.document.service.DocumentServiceJava
@@ -17,8 +16,6 @@ import com.wooteco.wiki.history.service.HistoryService
 import com.wooteco.wiki.organizationdocument.dto.OrganizationDocumentSearchResponse
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.data.domain.Page
-import org.springframework.http.HttpStatus.NO_CONTENT
-import org.springframework.http.HttpStatus.OK
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
@@ -116,17 +113,6 @@ class DocumentController(
         return ApiResponseGenerator.success("조회수 누적 완료")
     }
 
-    @Operation(summary = "조직 문서 추가 API", description = "문서에 조직 문서를 추가합니다.")
-    @PostMapping("/{uuidText}/organization-documents")
-    fun addOrganizationDocument(
-        @PathVariable uuidText: String,
-        @RequestBody request: DocumentOrganizationMappingAddRequest
-    ): ApiResponse<SuccessBody<Void>> {
-        val uuid = UUID.fromString(uuidText)
-        documentServiceJava.addOrganizationDocument(uuid, request)
-        return ApiResponseGenerator.success(OK)
-    }
-
     @Operation(summary = "특정 문서에 대한 조직 문서 조회 API", description = "특정 문서에 대한 조직 문서들을 조회합니다.")
     @GetMapping("/{uuidText}/organization-documents")
     fun readOrganizationDocument(
@@ -134,18 +120,6 @@ class DocumentController(
     ): ApiResponse<SuccessBody<List<OrganizationDocumentSearchResponse>>> {
         val uuid = UUID.fromString(uuidText)
         return ApiResponseGenerator.success(documentServiceJava.searchOrganizationDocument(uuid))
-    }
-
-    @Operation(summary = "특정 문서에 대한 조직 문서 삭제 API", description = "특정 문서에 대한 조직 문서를 제거합니다.")
-    @DeleteMapping("/{uuidText}/organization-documents/{organizationDocumentUuidText}")
-    fun deleteOrganizationDocument(
-        @PathVariable uuidText: String,
-        @PathVariable organizationDocumentUuidText: String
-    ): ApiResponse<SuccessBody<Void>> {
-        val documentUuid = UUID.fromString(uuidText)
-        val organizationDocumentUuid = UUID.fromString(organizationDocumentUuidText)
-        documentServiceJava.deleteOrganizationDocument(documentUuid, organizationDocumentUuid)
-        return ApiResponseGenerator.success(NO_CONTENT)
     }
 
     private fun <T> convertToResponse(pageResponses: Page<T>): ResponseDto<List<T>> {

@@ -2,6 +2,8 @@ package com.wooteco.wiki.organizationdocument.service;
 
 import static com.wooteco.wiki.global.exception.ErrorCode.ORGANIZATION_DOCUMENT_NOT_FOUND;
 
+import com.wooteco.wiki.document.domain.CrewDocument;
+import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
@@ -28,13 +30,17 @@ public class OrganizationDocumentService {
     private final OrganizationDocumentRepository organizationDocumentRepository;
     private final OrganizationEventRepository organizationEventRepository;
     private final DocumentRepository documentRepository;
+    private final DocumentOrganizationLinkService documentOrganizationLinkService;
+    private final CrewDocumentRepository crewDocumentRepository;
 
     public OrganizationDocumentResponse create(OrganizationDocumentCreateRequest organizationDocumentCreateRequest) {
         if (documentRepository.existsByTitle(organizationDocumentCreateRequest.title())) {
             throw new WikiException(ErrorCode.DOCUMENT_DUPLICATE);
         }
+        CrewDocument crewDocument = getCrewDocument(organizationDocumentCreateRequest.crewDocumentUuid());
         OrganizationDocument organizationDocument = organizationDocumentCreateRequest.toOrganizationDocument();
         organizationDocumentRepository.save(organizationDocument);
+        documentOrganizationLinkService.link(crewDocument, organizationDocument);
         return new OrganizationDocumentResponse(organizationDocument);
     }
 
@@ -62,6 +68,11 @@ public class OrganizationDocumentService {
                 .map(OrganizationEventResponse::new)
                 .toList();
         return new OrganizationDocumentAndEventResponse(organizationDocument, organizationEventResponses);
+    }
+
+    private CrewDocument getCrewDocument(UUID uuid) {
+        return crewDocumentRepository.findByUuid(uuid)
+                .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
     }
 
     private OrganizationDocument getOrganizationDocument(UUID uuid) {

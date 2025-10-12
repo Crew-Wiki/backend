@@ -97,7 +97,7 @@ class OrganizationCrewDocumentServiceTest {
                 softly.assertThat(organizationDocumentAndEventResponse.organizationDocumentUuid()).isEqualTo(uuid);
                 softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().size())
                         .isEqualTo(1);
-                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().getFirst().title())
+                softly.assertThat(organizationDocumentAndEventResponse.organizationEventResponses().get(0).title())
                         .isEqualTo("defaultTitle");
             });
         }
@@ -120,11 +120,21 @@ class OrganizationCrewDocumentServiceTest {
 
             // when
             OrganizationDocumentCreateRequest organizationDocumentCreateRequest = new OrganizationDocumentCreateRequest(
-                    "title", "contents", "writer", 15L, UUID.randomUUID());
+                    "title", "contents", "writer", 15L, UUID.randomUUID(), UUID.randomUUID());
 
             WikiException ex = assertThrows(WikiException.class,
                     () -> organizationDocumentService.create(organizationDocumentCreateRequest));
             Assertions.assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_DUPLICATE);
         }
+
+//        @DisplayName("존재하지 않는 특정 문서의 Uuid로 요청한다면 예외가 발생한다 : DOCUMENT_NOT_FOUND")
+//        @Test
+//        void addOrganizationDocument_error_byNonExistingDocumentUuid() {
+//            // when & then
+//            WikiException ex = assertThrows(WikiException.class,
+//                    () -> organizationDocumentService.create(UUID.randomUUID(),
+//                            documentOrganizationMappingAddRequest));
+//            Assertions.assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_NOT_FOUND);
+//        }
     }
 }
