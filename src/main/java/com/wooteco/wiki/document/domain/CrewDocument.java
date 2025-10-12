@@ -17,4 +17,9 @@ public class CrewDocument extends Document {
                         final Long documentBytes, final UUID uuid) {
         super(title, contents, writer, documentBytes, uuid);
     }
+
+    @Override
+    public DocumentType type() {
+        return DocumentType.CREW;
+    }
 }

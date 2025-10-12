@@ -13,9 +13,11 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 
+@Getter
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "dtype", length = 20)
@@ -81,44 +83,14 @@ public abstract class Document {
         return this.id != null && this.id.equals(that.id);
     }
 
+    public void changeViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
+
+    public abstract DocumentType type();
+
     @Override
     public int hashCode() {
         return id != null ? id.hashCode() : 0;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getContents() {
-        return contents;
-    }
-
-    public String getWriter() {
-        return writer;
-    }
-
-    public Long getDocumentBytes() {
-        return documentBytes;
-    }
-
-    public LocalDateTime getGenerateTime() {
-        return generateTime;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public Integer getViewCount() {
-        return viewCount;
-    }
-
-    public void changeViewCount(int viewCount) {
-        this.viewCount = viewCount;
     }
 }
