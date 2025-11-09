@@ -1,0 +1,61 @@
+name: dev-cd.yml
+
+on:
+  push:
+    branches: [ "develop" ]
+    paths:
+      - "**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x gradlew
+        working-directory: ./
+
+      - name: Build project
+        run: ./gradlew clean build
+        working-directory: ./
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Multi-Arch Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:${{ github.sha }}
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.DEV_SERVER_PEM }}
+          script: |
+            cd ~/crew-wiki
+            echo "LOG_PATH=${{ secrets.LOG_PATH }}" > .env
+            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            docker-compose pull
+            docker-compose up -d
