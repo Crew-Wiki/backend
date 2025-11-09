@@ -47,12 +47,19 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:${{ github.sha }}
 
-      - name: Create application config files
+      - name: Create/Update .env for container
         run: |
-          mkdir -p ~/crew-wiki/config
-          
-          echo "${{ secrets.APPLICATION_DEV_PROPERTIES }}" > ~/crew-wiki/config/application-dev.yml
-          echo "${{ secrets.APPLICATION_PRIVATE_PROPERTIES }}" > ~/crew-wiki/config/application-private.yml
+          cat <<EOF > ~/mulkkam/.env
+          LOG_PATH=${{ secrets.LOG_PATH }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          JWT_SECRET_EXPIRE_LENGTH=${{ secrets.JWT_SECRET_EXPIRE_LENGTH }}
+          DEV_DB_URL=${{ secrets.DEV_DB_URL }}
+          DEV_DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}
+          DEV_DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}
+          AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}
+          AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}
+          S3_BUCKET=${{ secrets.S3_BUCKET }}
+          EOF
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
