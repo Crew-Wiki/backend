@@ -54,14 +54,14 @@ jobs:
           username: ${{ secrets.DEV_SERVER_USERNAME }}
           key: ${{ secrets.DEV_SERVER_PEM }}
           script: |
-            docker stop crew-wiki || true
-            docker rm crew-wiki || true
+            sudo docker stop crew-wiki || true
+            sudo docker rm crew-wiki || true
 
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
 
             echo "LOG_PATH=${{ secrets.LOG_PATH }}" > ~/crew-wiki/.env
 
-            docker run -d \
+            sudo docker run -d \
               --name crew-wiki \
               --env-file ~/crew-wiki/.env \
               -p 8081:8081 \
