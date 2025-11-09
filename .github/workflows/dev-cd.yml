@@ -49,9 +49,8 @@ jobs:
 
       - name: Create/Update .env for container
         run: |
-          BASE_DIR=/home/ubuntu/crew-wiki
-
-          cat <<EOF > $BASE_DIR/.env
+          mkdir -p crew-wiki
+          cat <<EOF > crew-wiki/.env
           LOG_PATH=${{ secrets.LOG_PATH }}
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           JWT_SECRET_EXPIRE_LENGTH=${{ secrets.JWT_SECRET_EXPIRE_LENGTH }}
