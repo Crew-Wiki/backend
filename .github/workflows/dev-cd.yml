@@ -50,12 +50,19 @@ jobs:
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DEV_SERVER_EIP }}
-          username: ${{ secrets.DEV_SERVER_USERNAME }}
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
           key: ${{ secrets.DEV_SERVER_PEM }}
           script: |
-            cd ~/crew-wiki
-            echo "LOG_PATH=${{ secrets.LOG_PATH }}" > .env
-            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-            docker-compose pull
-            docker-compose up -d
+            docker stop crew-wiki || true
+            docker rm crew-wiki || true
+
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
+
+            echo "LOG_PATH=${{ secrets.LOG_PATH }}" > ~/crew-wiki/.env
+
+            docker run -d \
+              --name crew-wiki \
+              --env-file ~/crew-wiki/.env \
+              -p 8080:8080 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
