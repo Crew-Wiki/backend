@@ -49,7 +49,7 @@ jobs:
 
       - name: Create/Update .env for container
         run: |
-          cat <<EOF > ~/mulkkam/.env
+          cat <<EOF > ~/crew-wiki/.env
           LOG_PATH=${{ secrets.LOG_PATH }}
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           JWT_SECRET_EXPIRE_LENGTH=${{ secrets.JWT_SECRET_EXPIRE_LENGTH }}
