@@ -80,5 +80,5 @@ jobs:
             sudo docker run -d \
             --name crew-wiki \
             --env-file "$BASE_DIR/.env" \
-            -p 8081:8080 \
+            -p 8080:8080 \
             "$IMG"
