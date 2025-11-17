@@ -106,12 +106,6 @@ public class DocumentService {
         return mapToResponse(document);
     }
 
-    public void deleteById(Long id) {
-        documentRepository.findById(id)
-                .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
-        documentRepository.deleteById(id);
-    }
-
     public void flushViews(Map<UUID, Integer> views) {
         List<Document> documents = documentRepository.findAllByUuidIn(views.keySet());
 
@@ -124,6 +118,12 @@ public class DocumentService {
         }
 
         documentRepository.saveAll(documents);
+    }
+
+    public void deleteByUuid(UUID documentUuid) {
+        documentRepository.findByUuid(documentUuid)
+                .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
+        documentRepository.deleteByUuid(documentUuid);
     }
 
     private DocumentResponse mapToResponse(Document document) {

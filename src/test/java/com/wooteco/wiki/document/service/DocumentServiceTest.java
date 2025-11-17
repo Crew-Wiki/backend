@@ -246,8 +246,8 @@ class DocumentServiceTest {
     }
 
     @Nested
-    @DisplayName("문서 id로 삭제 기능")
-    class deleteById {
+    @DisplayName("문서 uuid로 삭제 기능")
+    class deleteByUuid {
 
         @DisplayName("존재하는 문서 id일 경우 문서가 로그들과 함께 삭제된다")
         @Test
@@ -262,7 +262,7 @@ class DocumentServiceTest {
             assertThat(historyRepository.findAll()).hasSize(1);
 
             // when
-            documentService.deleteById(documentResponse.getDocumentId());
+            documentService.deleteByUuid(documentResponse.getDocumentUUID());
 
             // after then
             assertThat(documentRepository.findAll()).hasSize(0);
@@ -274,7 +274,7 @@ class DocumentServiceTest {
         void deleteById_throwsException_byNonExistsId() {
             // when & then
             WikiException ex = assertThrows(WikiException.class,
-                    () -> documentService.deleteById(Long.MAX_VALUE));
+                    () -> documentService.deleteByUuid(UUID.randomUUID()));
             assertThat(ex.getErrorCode()).isEqualTo(DOCUMENT_NOT_FOUND);
         }
     }

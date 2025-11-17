@@ -1,8 +1,7 @@
 package com.wooteco.wiki.admin.service;
 
 import com.wooteco.wiki.document.service.DocumentService;
-import com.wooteco.wiki.global.exception.ErrorCode;
-import com.wooteco.wiki.global.exception.WikiException;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +13,7 @@ public class AdminService {
         this.documentService = documentService;
     }
 
-    public void deleteDocumentByDocumentId(Long documentId) {
-        documentService.deleteById(documentId);
+    public void deleteDocumentByDocumentUuid(UUID documentUuid) {
+        documentService.deleteByUuid(documentUuid);
     }
 }
