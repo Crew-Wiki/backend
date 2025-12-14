@@ -1,8 +1,8 @@
-name: dev-cd.yml
+name: prod-cd.yml
 
 on:
   push:
-    branches: ["develop"]
+    branches: ["main"]
     paths:
       - "**"
 
@@ -58,13 +58,13 @@ jobs:
 
           mkdir -p "$BASE_DIR"
           cat > "$BASE_DIR/.env" <<'EOF'
-          SPRING_PROFILES_ACTIVE=dev
+          SPRING_PROFILES_ACTIVE=prod
           LOG_PATH=${{ secrets.LOG_PATH }}
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           JWT_SECRET_EXPIRE_LENGTH=${{ secrets.JWT_SECRET_EXPIRE_LENGTH }}
-          DEV_DB_URL=${{ secrets.DEV_DB_URL }}
-          DEV_DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}
-          DEV_DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}
+          PROD_DB_URL=${{ secrets.PROD_DB_URL }}
+          PROD_DB_USERNAME=${{ secrets.PROD_DB_USERNAME }}
+          PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
           AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}
           AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}
           S3_BUCKET=${{ secrets.S3_BUCKET }}
