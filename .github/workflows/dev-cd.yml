@@ -7,7 +7,7 @@ on:
       - "**"
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout source
@@ -25,14 +25,7 @@ jobs:
           cache-read-only: false
 
       - name: Build project
-        run: ./gradlew clean build
-
-  push:
-    needs: build
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+        run: ./gradlew clean bootJar
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -51,7 +44,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:${{ github.sha }}
 
   deploy:
-    needs: push
+    needs: build-and-push
     runs-on: ubuntu-24.04
     steps:
       - name: Deploy to Server
