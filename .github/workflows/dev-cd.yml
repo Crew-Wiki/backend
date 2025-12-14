@@ -65,15 +65,7 @@ jobs:
             AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}
             S3_BUCKET=${{ secrets.S3_BUCKET }}
             EOF
-  
-            # 선택: Spring 표준 키도 함께 넣어 안전망 구성
-            DB_URL=$(grep '^DEV_DB_URL=' "$BASE_DIR/.env" | cut -d= -f2-)
-            DB_USER=$(grep '^DEV_DB_USERNAME=' "$BASE_DIR/.env" | cut -d= -f2-)
-            DB_PASS=$(grep '^DEV_DB_PASSWORD=' "$BASE_DIR/.env" | cut -d= -f2-)
-            echo "SPRING_DATASOURCE_URL=$DB_URL"    | sudo tee -a "$BASE_DIR/.env" >/dev/null
-            echo "SPRING_DATASOURCE_USERNAME=$DB_USER" | sudo tee -a "$BASE_DIR/.env" >/dev/null
-            echo "SPRING_DATASOURCE_PASSWORD=$DB_PASS" | sudo tee -a "$BASE_DIR/.env" >/dev/null
-            
+
             sudo docker rm -f crew-wiki || true
             sudo docker pull "$IMG"
             
