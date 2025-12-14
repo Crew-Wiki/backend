@@ -51,34 +51,29 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Deploy to Server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEV_SERVER_EIP }}
-          username: ${{ secrets.DEV_SERVER_USERNAME }}
-          key: ${{ secrets.DEV_SERVER_PEM }}
-          script: |
-            set -euo pipefail
-            BASE_DIR=/home/ubuntu/crew-wiki
-            IMG=${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
+        run: |
+          set -euo pipefail
+          BASE_DIR=/home/ubuntu/crew-wiki
+          IMG=${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
 
-            sudo mkdir -p "$BASE_DIR"
-            sudo tee "$BASE_DIR/.env" >/dev/null <<'EOF'
-            LOG_PATH=${{ secrets.LOG_PATH }}
-            JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-            JWT_SECRET_EXPIRE_LENGTH=${{ secrets.JWT_SECRET_EXPIRE_LENGTH }}
-            DEV_DB_URL=${{ secrets.DEV_DB_URL }}
-            DEV_DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}
-            DEV_DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}
-            AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}
-            AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}
-            S3_BUCKET=${{ secrets.S3_BUCKET }}
-            EOF
+          mkdir -p "$BASE_DIR"
+          cat > "$BASE_DIR/.env" <<'EOF'
+          LOG_PATH=${{ secrets.LOG_PATH }}
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          JWT_SECRET_EXPIRE_LENGTH=${{ secrets.JWT_SECRET_EXPIRE_LENGTH }}
+          DEV_DB_URL=${{ secrets.DEV_DB_URL }}
+          DEV_DB_USERNAME=${{ secrets.DEV_DB_USERNAME }}
+          DEV_DB_PASSWORD=${{ secrets.DEV_DB_PASSWORD }}
+          AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}
+          AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}
+          S3_BUCKET=${{ secrets.S3_BUCKET }}
+          EOF
 
-            sudo docker rm -f crew-wiki || true
-            sudo docker pull "$IMG"
-            
-            sudo docker run -d \
-            --name crew-wiki \
-            --env-file "$BASE_DIR/.env" \
-            -p 8080:8080 \
-            "$IMG"
+          docker rm -f crew-wiki || true
+          docker pull "$IMG"
+
+          docker run -d \
+          --name crew-wiki \
+          --env-file "$BASE_DIR/.env" \
+          -p 8080:8080 \
+          "$IMG"
