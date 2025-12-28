@@ -61,14 +61,14 @@ class DocumentServiceTest {
             historyRepository.save(history);
 
             // when
-            DocumentUpdateRequest documentUpdateRequest = new DocumentUpdateRequest("test", "test", "test", 150,
+            DocumentUpdateRequest documentUpdateRequest = new DocumentUpdateRequest("test", "test", "test", 150L,
                     savedCrewDocument.getUuid());
 
             documentService.put(savedCrewDocument.getUuid(), documentUpdateRequest);
             DocumentResponse documentResponse = documentService.getByUuid(savedCrewDocument.getUuid());
 
             // then
-            assertThat(documentResponse.getLatestVersion()).isEqualTo(21L);
+            assertThat(documentResponse.latestVersion()).isEqualTo(21L);
         }
     }
 
@@ -84,10 +84,10 @@ class DocumentServiceTest {
                     DocumentFixture.createDocumentCreateRequestDefault());
 
             // when
-            DocumentUuidResponse documentUuidResponse = documentService.getUuidByTitle(documentResponse.getTitle());
+            DocumentUuidResponse documentUuidResponse = documentService.getUuidByTitle(documentResponse.title());
 
             // then
-            assertThat(documentUuidResponse.uuid()).isEqualTo(documentResponse.getDocumentUUID());
+            assertThat(documentUuidResponse.uuid()).isEqualTo(documentResponse.documentUUID());
         }
 
         @DisplayName("존재하지 않는 문서 제목으로 조회할 경우 예외를 반환한다 : WikiException.DOCUMENT_NOT_FOUND")
@@ -262,7 +262,7 @@ class DocumentServiceTest {
             assertThat(historyRepository.findAll()).hasSize(1);
 
             // when
-            documentService.deleteByUuid(documentResponse.getDocumentUUID());
+            documentService.deleteByUuid(documentResponse.documentUUID());
 
             // after then
             assertThat(documentRepository.findAll()).hasSize(0);
