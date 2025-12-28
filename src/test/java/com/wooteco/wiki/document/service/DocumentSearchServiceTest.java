@@ -75,8 +75,8 @@ class DocumentSearchServiceTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result).hasSize(2);
-            softly.assertThat(result.get(0).getDocumentType()).isEqualTo(DocumentType.CREW);
-            softly.assertThat(result.get(1).getDocumentType()).isEqualTo(DocumentType.ORGANIZATION);
+            softly.assertThat(result.get(0).documentType()).isEqualTo(DocumentType.CREW);
+            softly.assertThat(result.get(1).documentType()).isEqualTo(DocumentType.ORGANIZATION);
         });
     }
 } 
