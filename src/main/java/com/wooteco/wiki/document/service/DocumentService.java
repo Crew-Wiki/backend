@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
-import kotlin.random.Random;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,10 +93,10 @@ public class DocumentService {
     }
 
     public DocumentResponse put(UUID uuid, DocumentUpdateRequest request) {
-        String title = request.getTitle();
-        String contents = request.getContents();
-        String writer = request.getWriter();
-        Long documentBytes = request.getDocumentBytes();
+        String title = request.title();
+        String contents = request.contents();
+        String writer = request.writer();
+        Long documentBytes = request.documentBytes();
 
         Document document = documentRepository.findByUuid(uuid)
                 .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
