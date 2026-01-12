@@ -7,6 +7,7 @@ import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
+import com.wooteco.wiki.history.service.HistoryService;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
@@ -32,6 +33,7 @@ public class OrganizationDocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentOrganizationLinkService documentOrganizationLinkService;
     private final CrewDocumentRepository crewDocumentRepository;
+    private final HistoryService historyService;
 
     public OrganizationDocumentResponse create(OrganizationDocumentCreateRequest organizationDocumentCreateRequest) {
         if (documentRepository.existsByTitle(organizationDocumentCreateRequest.title())) {
@@ -56,6 +58,7 @@ public class OrganizationDocumentService {
                 organizationDocumentUpdateRequest.documentBytes(),
                 LocalDateTime.now()
         );
+        historyService.save(organizationDocument);
         return new OrganizationDocumentResponse(organizationDocument);
     }
 

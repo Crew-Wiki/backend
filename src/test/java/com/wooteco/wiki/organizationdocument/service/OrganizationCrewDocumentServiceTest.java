@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
+import com.wooteco.wiki.history.domain.History;
+import com.wooteco.wiki.history.repository.HistoryRepository;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
@@ -14,6 +16,7 @@ import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepo
 import com.wooteco.wiki.organizationevent.domain.OrganizationEvent;
 import com.wooteco.wiki.organizationevent.fixture.OrganizationEventFixture;
 import com.wooteco.wiki.organizationevent.repository.OrganizationEventRepository;
+import java.util.List;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -21,6 +24,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -35,6 +40,9 @@ class OrganizationCrewDocumentServiceTest {
 
     @Autowired
     private OrganizationEventRepository organizationEventRepository;
+
+    @Autowired
+    private HistoryRepository historyRepository;
 
     @DisplayName("조직 문서를 수정할 때")
     @Nested
@@ -61,11 +69,20 @@ class OrganizationCrewDocumentServiceTest {
                     organizationDocument.getUuid()).orElseThrow();
 
             // then
+            Page<History> histories = historyRepository.findAllByDocumentId(organizationDocument.getId(), Pageable.ofSize(1));
+
             assertSoftly(softly -> {
                 softly.assertThat(foundOrganizationDocument.getTitle()).isEqualTo(updateTitle);
                 softly.assertThat(foundOrganizationDocument.getContents()).isEqualTo(updateContents);
                 softly.assertThat(foundOrganizationDocument.getWriter()).isEqualTo(updateWriter);
                 softly.assertThat(foundOrganizationDocument.getDocumentBytes()).isEqualTo(updateDocumentBytes);
+                softly.assertThat(histories.hasContent()).isTrue();
+
+                History first = histories.getContent().get(0);
+                softly.assertThat(first.getTitle()).isEqualTo(updateTitle);
+                softly.assertThat(first.getContents()).isEqualTo(updateContents);
+                softly.assertThat(first.getWriter()).isEqualTo(updateWriter);
+                softly.assertThat(first.getDocumentBytes()).isEqualTo(updateDocumentBytes);
             });
         }
     }
