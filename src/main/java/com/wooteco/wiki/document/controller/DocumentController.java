@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -123,6 +124,18 @@ public class DocumentController {
     ) {
         UUID uuid = UUID.fromString(uuidText);
         return ApiResponseGenerator.success(documentServiceJava.searchOrganizationDocument(uuid));
+    }
+
+    @Operation(summary = "특정 문서에 대한 조직 문서 삭제 API", description = "특정 문서에 대한 조직 문서를 제거합니다.")
+    @DeleteMapping("/{uuidText}/organization-documents/{organizationDocumentUuidText}")
+    public ApiResponse<SuccessBody<Void>> deleteOrganizationDocument(
+            @PathVariable String uuidText,
+            @PathVariable String organizationDocumentUuidText
+    ) {
+        UUID documentUuid = UUID.fromString(uuidText);
+        UUID organizationDocumentUuid = UUID.fromString(organizationDocumentUuidText);
+        documentServiceJava.deleteOrganizationDocument(documentUuid, organizationDocumentUuid);
+        return ApiResponseGenerator.success(HttpStatus.NO_CONTENT);
     }
 
     private <T> ResponseDto<List<T>> convertToResponse(Page<T> pageResponses) {
