@@ -87,6 +87,10 @@ public abstract class Document {
         this.viewCount = viewCount;
     }
 
+    public DocumentType getDocumentType() {
+        return type();
+    }
+
     public abstract DocumentType type();
 
     @Override
