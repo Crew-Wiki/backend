@@ -48,9 +48,10 @@ public class DocumentController {
 
     @Operation(summary = "위키 글 전체 조회", description = "페이지네이션을 통해 모든 위키 글을 조회합니다.")
     @GetMapping("")
-    public ApiResponse<SuccessBody<ResponseDto<List<Document>>>> findAll(@ModelAttribute PageRequestDto pageRequestDto) {
+    public ApiResponse<SuccessBody<ResponseDto<List<DocumentListResponse>>>> findAll(@ModelAttribute PageRequestDto pageRequestDto) {
         Page<Document> pageResponses = documentService.findAll(pageRequestDto);
-        return ApiResponseGenerator.success(convertToResponse(pageResponses));
+        Page<DocumentListResponse> responses = pageResponses.map(DocumentListResponse::from);
+        return ApiResponseGenerator.success(convertToResponse(responses));
     }
 
     @Operation(summary = "제목으로 위키 글 조회", description = "제목을 통해 위키 글을 조회합니다.")
@@ -146,4 +147,3 @@ public class DocumentController {
         );
     }
 }
-
