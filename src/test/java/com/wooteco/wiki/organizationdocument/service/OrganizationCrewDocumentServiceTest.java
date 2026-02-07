@@ -3,6 +3,9 @@ package com.wooteco.wiki.organizationdocument.service;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.wooteco.wiki.document.domain.CrewDocument;
+import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.history.domain.History;
@@ -11,6 +14,7 @@ import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
+import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
 import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
 import com.wooteco.wiki.organizationevent.domain.OrganizationEvent;
@@ -43,6 +47,9 @@ class OrganizationCrewDocumentServiceTest {
 
     @Autowired
     private HistoryRepository historyRepository;
+
+    @Autowired
+    private CrewDocumentRepository crewDocumentRepository;
 
     @DisplayName("조직 문서를 수정할 때")
     @Nested
@@ -142,6 +149,36 @@ class OrganizationCrewDocumentServiceTest {
             WikiException ex = assertThrows(WikiException.class,
                     () -> organizationDocumentService.create(organizationDocumentCreateRequest));
             Assertions.assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_DUPLICATE);
+        }
+
+        @DisplayName("첫 번째 로그가 저장된다.")
+        @Test
+        void create_success_savesFirstHistory() {
+            // given
+            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+            CrewDocument savedCrewDocument = crewDocumentRepository.save(crewDocument);
+
+            OrganizationDocumentCreateRequest organizationDocumentCreateRequest = new OrganizationDocumentCreateRequest(
+                    "newTitle", "newContents", "newWriter", 99L, savedCrewDocument.getUuid(), UUID.randomUUID());
+
+            // when
+            OrganizationDocumentResponse response = organizationDocumentService.create(organizationDocumentCreateRequest);
+            OrganizationDocument savedOrganizationDocument = organizationDocumentRepository.findByUuid(
+                    response.organizationDocumentUuid()).orElseThrow();
+
+            // then
+            Page<History> histories = historyRepository.findAllByDocumentId(savedOrganizationDocument.getId(),
+                    Pageable.ofSize(1));
+
+            assertSoftly(softly -> {
+                softly.assertThat(histories.hasContent()).isTrue();
+                History first = histories.getContent().get(0);
+                softly.assertThat(first.getVersion()).isEqualTo(1L);
+                softly.assertThat(first.getTitle()).isEqualTo("newTitle");
+                softly.assertThat(first.getContents()).isEqualTo("newContents");
+                softly.assertThat(first.getWriter()).isEqualTo("newWriter");
+                softly.assertThat(first.getDocumentBytes()).isEqualTo(99L);
+            });
         }
 
 //        @DisplayName("존재하지 않는 특정 문서의 Uuid로 요청한다면 예외가 발생한다 : DOCUMENT_NOT_FOUND")

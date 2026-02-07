@@ -41,9 +41,10 @@ public class OrganizationDocumentService {
         }
         CrewDocument crewDocument = getCrewDocument(organizationDocumentCreateRequest.crewDocumentUuid());
         OrganizationDocument organizationDocument = organizationDocumentCreateRequest.toOrganizationDocument();
-        organizationDocumentRepository.save(organizationDocument);
-        documentOrganizationLinkService.link(crewDocument, organizationDocument);
-        return new OrganizationDocumentResponse(organizationDocument);
+        OrganizationDocument savedOrganizationDocument = organizationDocumentRepository.save(organizationDocument);
+        historyService.save(savedOrganizationDocument);
+        documentOrganizationLinkService.link(crewDocument, savedOrganizationDocument);
+        return new OrganizationDocumentResponse(savedOrganizationDocument);
     }
 
     public OrganizationDocumentResponse update(OrganizationDocumentUpdateRequest organizationDocumentUpdateRequest) {
