@@ -71,9 +71,9 @@ class DocumentController(
         return ApiResponseGenerator.success(response)
     }
 
-    @Operation(summary = "문서 로그 목록 조회", description = "문서 UUID로 해당 문서의 로그 목록을 페이지네이션을 통해 조회합니다.")
-    @GetMapping("uuid/{uuidText}/log")
-    fun getLogs(
+    @Operation(summary = "문서 히스토리 목록 조회", description = "문서 UUID로 해당 문서의 히스토리 목록을 페이지네이션을 통해 조회합니다.")
+    @GetMapping("uuid/{uuidText}/history")
+    fun getHistories(
         @PathVariable uuidText: String,
         @ModelAttribute pageRequestDto: PageRequestDto
     ): ApiResponse<SuccessBody<ResponseDto<List<HistoryResponse>>>> {
@@ -82,11 +82,11 @@ class DocumentController(
         return ApiResponseGenerator.success(convertToResponse(pageResponses))
     }
 
-    @Operation(summary = "로그 상세 조회", description = "로그 ID로 로그 상세 정보를 조회합니다.")
-    @GetMapping("/log/{logId}")
-    fun getDocumentLogs(@PathVariable logId: Long): ApiResponse<SuccessBody<HistoryDetailResponse>> {
-        val logDetail = historyService.getLogDetail(logId)
-        return ApiResponseGenerator.success(logDetail)
+    @Operation(summary = "히스토리 상세 조회", description = "히스토리 ID로 히스토리 상세 정보를 조회합니다.")
+    @GetMapping("/history/{historyId}")
+    fun getDocumentHistory(@PathVariable historyId: Long): ApiResponse<SuccessBody<HistoryDetailResponse>> {
+        val historyDetail = historyService.getHistoryDetail(historyId)
+        return ApiResponseGenerator.success(historyDetail)
     }
 
     @Operation(summary = "위키 글 수정", description = "위키 글을 수정합니다.")

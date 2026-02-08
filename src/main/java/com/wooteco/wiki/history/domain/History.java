@@ -18,12 +18,12 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Entity
-@Table(name = "log")
+@Table(name = "history")
 public class History {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "log_id")
+    @Column(name = "history_id")
     private Long id;
 
     private String title;

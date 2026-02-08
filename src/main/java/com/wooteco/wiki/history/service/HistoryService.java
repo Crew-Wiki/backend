@@ -39,10 +39,10 @@ public class HistoryService {
     }
 
     @Transactional(readOnly = true)
-    public HistoryDetailResponse getLogDetail(Long logId) {
-        History history = historyRepository.findById(logId)
+    public HistoryDetailResponse getHistoryDetail(Long historyId) {
+        History history = historyRepository.findById(historyId)
                 .orElseThrow(() -> new WikiException(DOCUMENT_NOT_FOUND));
-        return new HistoryDetailResponse(logId, history.getTitle(), history.getContents(), history.getWriter(),
+        return new HistoryDetailResponse(historyId, history.getTitle(), history.getContents(), history.getWriter(),
                 history.getGenerateTime());
     }
 
@@ -52,14 +52,14 @@ public class HistoryService {
                 .orElseThrow(() -> new WikiException(DOCUMENT_NOT_FOUND));
 
         Pageable pageable = pageRequestDto.toPageable();
-        Page<History> logs = historyRepository.findAllByDocumentId(documentId, pageable);
-        List<History> content = logs.getContent();
+        Page<History> histories = historyRepository.findAllByDocumentId(documentId, pageable);
+        List<History> content = histories.getContent();
 
         List<HistoryResponse> responses = content.stream()
                 .map(HistoryResponse::of)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(responses, pageable, logs.getTotalElements());
+        return new PageImpl<>(responses, pageable, histories.getTotalElements());
     }
 
     @Transactional(readOnly = true)

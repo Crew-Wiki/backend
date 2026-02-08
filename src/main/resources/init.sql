@@ -10,7 +10,7 @@ VALUES ('titleA', '내용A', '작성자1', 100, '2024-01-01T10:00:00', 'c036a5d8
        ('titleD1', '내용D1', '작성자11', 400, '2024-01-04T10:00:00', 'e64ae9dc-70d2-4ef7-a431-6ef5f81b2cf0'),
        ('titleE1', '내용E1', '작성자21', 500, '2024-01-05T10:00:00', 'a3eb4453-e317-4411-932f-8d3b3e3b5b74');
 
-INSERT INTO log (title, contents, writer, document_bytes, generate_time, document_id, version)
+INSERT INTO history (title, contents, writer, document_bytes, generate_time, document_id, version)
 VALUES ('titleA', '내용Abefore', '작성자1before', 1000, '2023-01-01T10:00:00', 1, 1),
        ('titleA', '내용A', '작성자1', 100, '2024-01-01T10:00:00', 1, 2),
        ('titleB', '내용B', '작성자2', 200, '2024-01-02T10:00:00', 2, 1),
