@@ -40,7 +40,7 @@ public class HistoryServiceTest {
     private HistoryRepository historyRepository;
 
     @Nested
-    @DisplayName("documentUuid로 요청 시 로그 리스트 반환하는 기능")
+    @DisplayName("documentUuid로 요청 시 히스토리 리스트 반환하는 기능")
     class findAllByCrewDocumentUuid {
 
         private PageRequestDto pageRequestDto = new PageRequestDto();
@@ -59,7 +59,7 @@ public class HistoryServiceTest {
                     HistoryFixture.create("t1", "c2", "w2", 20L, LocalDateTime.now(), savedCrewDocument, 2L));
         }
 
-        @DisplayName("documentUuid에 해당하는 로그들이 반환된다")
+        @DisplayName("documentUuid에 해당하는 히스토리들이 반환된다")
         @Test
         void findAllByDocumentUuid_success_bySomeData() {
             // when
@@ -100,7 +100,7 @@ public class HistoryServiceTest {
             assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_NOT_FOUND);
         }
 
-        @DisplayName("로그 저장 시 최신 version을 제공한다.")
+        @DisplayName("히스토리 저장 시 최신 version을 제공한다.")
         @Test
         void save_versionIsNumberedCorrectly() {
             // when
@@ -110,10 +110,10 @@ public class HistoryServiceTest {
             historyService.save(updatedDocument);
 
             // then
-            Page<HistoryResponse> secondLogs = historyService.findAllByDocumentUuid(savedCrewDocument.getUuid(), pageRequestDto);
-            assertThat(secondLogs.getContent()).hasSize(3);
-            assertThat(secondLogs.getContent().get(0).version()).isEqualTo(1L);
-            assertThat(secondLogs.getContent().get(2).version()).isEqualTo(3L);
+            Page<HistoryResponse> secondHistories = historyService.findAllByDocumentUuid(savedCrewDocument.getUuid(), pageRequestDto);
+            assertThat(secondHistories.getContent()).hasSize(3);
+            assertThat(secondHistories.getContent().get(0).version()).isEqualTo(1L);
+            assertThat(secondHistories.getContent().get(2).version()).isEqualTo(3L);
         }
     }
 }
