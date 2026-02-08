@@ -28,7 +28,7 @@ public class DocumentRepositoryTest {
 
     @Nested
     @DisplayName("문서 제목으로 uuid를 조회하는 기능")
-    class findUuidByTitle {
+    class FindUuidByTitle {
 
         @DisplayName("존재하지 않는 문서 제목으로 조회했을 때 Optional.empty를 반환한다")
         @Test
@@ -57,11 +57,11 @@ public class DocumentRepositoryTest {
 
     @Nested
     @DisplayName("문서 전체 조회 기능")
-    class findAll {
+    class FindAll {
 
         @DisplayName("DocumentRepository로 조회 시 CrewDocument와 OrganizationDocument가 모두 조회된다")
         @Test
-        void findAll_success_returnsBothCrewAndOrganizationDocuments() {
+        void findAll_success_byMixedDocumentTypes() {
             // given
             documentRepository.save(
                     DocumentFixture.createCrewDocument("crew문서", "content1", "writer1", 10L, UUID.randomUUID()));
@@ -83,7 +83,7 @@ public class DocumentRepositoryTest {
 
         @DisplayName("CrewDocument만 저장했을 때는 CrewDocument만 조회된다")
         @Test
-        void findAll_success_returnsOnlyCrewDocuments() {
+        void findAll_success_byOnlyCrewDocuments() {
             // given
             documentRepository.save(
                     DocumentFixture.createCrewDocument("crew1", "content1", "writer1", 10L, UUID.randomUUID()));
@@ -102,7 +102,7 @@ public class DocumentRepositoryTest {
 
         @DisplayName("OrganizationDocument만 저장했을 때는 OrganizationDocument만 조회된다")
         @Test
-        void findAll_success_returnsOnlyOrganizationDocuments() {
+        void findAll_success_byOnlyOrganizationDocuments() {
             // given
             documentRepository.save(
                     OrganizationDocumentFixture.create("org1", "content1", "writer1", 10L, UUID.randomUUID()));
@@ -148,7 +148,7 @@ public class DocumentRepositoryTest {
 
     @Nested
     @DisplayName("uuid로 id 찾는 기능")
-    class findIdByUuid {
+    class FindIdByUuid {
 
         private UUID uuid;
         private CrewDocument savedCrewDocument;
@@ -179,7 +179,7 @@ public class DocumentRepositoryTest {
 
         @DisplayName("UUID 리스트로 조회 시 해당 문서 리스트를 반환한다")
         @Test
-        void findAllByUuidIn_success() {
+        void findAllByUuidIn_success_byUuidSet() {
             // given
             CrewDocument doc1 = documentRepository.save(
                     DocumentFixture.createCrewDocument("title1", "content1", "writer1", 10L, UUID.randomUUID()));
