@@ -27,6 +27,10 @@ public class DocumentOrganizationLinkService {
         documentOrgDocLinkRepository.deleteByCrewDocumentAndOrganizationDocument(crewDocument, organizationDocument);
     }
 
+    public void unlinkAll(CrewDocument crewDocument) {
+        documentOrgDocLinkRepository.deleteAllByCrewDocument(crewDocument);
+    }
+
     @Transactional(readOnly = true)
     public List<OrganizationDocumentResponse> findOrganizationDocumentResponsesByDocument(CrewDocument crewDocument) {
         List<DocumentOrganizationLink> documentOrganizationLinks = documentOrgDocLinkRepository.findAllByCrewDocument(
