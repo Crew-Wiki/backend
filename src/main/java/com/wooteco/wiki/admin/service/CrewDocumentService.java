@@ -101,16 +101,6 @@ public class CrewDocumentService {
         List<OrganizationDocumentResponse> organizationDocumentResponses =
                 documentOrganizationLinkService.findOrganizationDocumentResponsesByDocument(crewDocument);
 
-        return new DocumentResponse(
-                crewDocument.getId(),
-                crewDocument.getUuid(),
-                crewDocument.getTitle(),
-                crewDocument.getContents(),
-                crewDocument.getWriter(),
-                crewDocument.getGenerateTime(),
-                crewDocument.getViewCount(),
-                latestVersion,
-                organizationDocumentResponses
-        );
+        return DocumentResponse.toDocumentResponse(crewDocument, latestVersion, organizationDocumentResponses);
     }
 }

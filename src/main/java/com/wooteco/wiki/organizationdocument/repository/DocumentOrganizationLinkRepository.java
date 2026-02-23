@@ -18,4 +18,6 @@ public interface DocumentOrganizationLinkRepository extends JpaRepository<Docume
                                                      OrganizationDocument organizationDocument);
 
     List<DocumentOrganizationLink> findAllByCrewDocument(CrewDocument crewDocument);
+
+    void deleteAllByCrewDocument(CrewDocument crewDocument);
 }
