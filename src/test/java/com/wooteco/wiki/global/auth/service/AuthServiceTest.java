@@ -8,7 +8,7 @@ import com.wooteco.wiki.admin.domain.dto.LoginRequest;
 import com.wooteco.wiki.admin.repository.AdminRepository;
 import com.wooteco.wiki.global.auth.JwtTokenProvider;
 import com.wooteco.wiki.global.auth.Role;
-import com.wooteco.wiki.global.auth.domain.dto.TokenInfoDto;
+import com.wooteco.wiki.global.auth.domain.dto.TokenInfoResponse;
 import com.wooteco.wiki.global.auth.domain.dto.TokenResponse;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
@@ -32,14 +32,14 @@ class AuthServiceTest {
     private AdminRepository adminRepository;
 
     @Nested
-    @DisplayName("TokenInfoDto로 Jwt 토큰 생성")
-    class createToken {
+    @DisplayName("TokenInfoResponse로 Jwt 토큰 생성")
+    class CreateToken {
 
-        @DisplayName("TokenInfoDto로 Jwt 토큰 생성된다.")
+        @DisplayName("TokenInfoResponse로 Jwt 토큰 생성된다.")
         @Test
-        void createToken_success() {
+        void createToken_success_byTokenInfoResponse() {
             // given
-            TokenInfoDto tokenInfoDto = new TokenInfoDto(1L, Role.ROLE_ADMIN);
+            TokenInfoResponse tokenInfoDto = new TokenInfoResponse(1L, Role.ROLE_ADMIN);
 
             // when
             TokenResponse tokenResponse = authService.createToken(tokenInfoDto);
@@ -52,7 +52,7 @@ class AuthServiceTest {
 
     @Nested
     @DisplayName("loginRequest로 Jwt 토큰 생성")
-    class login {
+    class Login {
 
         @DisplayName("존재하는 어드민 정보로 요청했을 시 Jwt 토큰을 반환한다.")
         @Test
@@ -71,7 +71,7 @@ class AuthServiceTest {
 
         @DisplayName("존재하지 않는 어드민 정보로 요청했을 때 예외 발생한다. : WikiException.ADMIN_NOT_FOUND")
         @Test
-        void login_throwException_byInValidAdmin() {
+        void login_fail_byInvalidAdmin() {
             // given
             LoginRequest loginRequest = new LoginRequest("invalidLoginId", "invalidPassword");
 

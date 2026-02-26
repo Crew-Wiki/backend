@@ -12,7 +12,7 @@ import org.springframework.data.domain.Sort;
 
 @Getter
 @Setter
-public class PageRequestDto {
+public class PagingRequest {
 
     @Min(value = 0, message = "페이지 번호는 0 이상이어야 합니다.")
     private int pageNumber = 0;

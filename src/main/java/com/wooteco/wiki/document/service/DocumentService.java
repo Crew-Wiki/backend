@@ -7,7 +7,7 @@ import com.wooteco.wiki.document.domain.dto.DocumentResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentUpdateRequest;
 import com.wooteco.wiki.document.domain.dto.DocumentUuidResponse;
 import com.wooteco.wiki.document.repository.DocumentRepository;
-import com.wooteco.wiki.global.common.PageRequestDto;
+import com.wooteco.wiki.global.common.PagingRequest;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.history.service.HistoryService;
@@ -67,7 +67,7 @@ public class DocumentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Document> findAll(PageRequestDto requestDto) {
+    public Page<Document> findAll(PagingRequest requestDto) {
         return documentRepository.findAll(requestDto.toPageable());
     }
 

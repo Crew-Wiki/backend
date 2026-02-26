@@ -43,11 +43,11 @@ class AuthControllerTest {
 
     @Nested
     @DisplayName("로그인 기능")
-    class login {
+    class Login {
 
         @DisplayName("유효한 이메일과 비밀번호로 로그인을 성공한다.")
         @Test
-        void login_success() {
+        void login_success_byValidCredentials() {
             // given
 
             // when
@@ -66,7 +66,7 @@ class AuthControllerTest {
 
         @DisplayName("유효하지 않는 이메일과 비밀번호로 로그인을 시도하여 실패: 상태 코드 404를 반환한다.")
         @Test
-        void login_throwException_byInvalidEmail() {
+        void login_fail_byInvalidCredentials() {
             // given
             // when
             LoginRequest requestDto = new LoginRequest("invalidLoginId", "invalidPassword");
@@ -85,11 +85,11 @@ class AuthControllerTest {
 
     @Nested
     @DisplayName("토큰 기반 어드민 조회 API 테스트")
-    class checkAuth {
+    class CheckAuth {
 
         @DisplayName("토큰으로 어드민 조회 시 200 OK 반환")
         @Test
-        void checkAuth_success() {
+        void checkAuth_success_byValidToken() {
             // given
             String expectedLoginId = "loginIdCS";
             Admin savedAdmin = adminRepository.save(new Admin(expectedLoginId, "password"));
