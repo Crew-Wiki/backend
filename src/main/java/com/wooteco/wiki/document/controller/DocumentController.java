@@ -1,5 +1,6 @@
 package com.wooteco.wiki.document.controller;
 
+import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.domain.dto.*;
 import com.wooteco.wiki.document.service.DocumentSearchService;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class DocumentController {
 
+    private final CrewDocumentService crewDocumentService;
     private final DocumentService documentService;
     private final HistoryService historyService;
     private final DocumentSearchService documentSearchService;
@@ -35,14 +37,14 @@ public class DocumentController {
     @Operation(summary = "위키 글 작성", description = "위키 글을 작성합니다.")
     @PostMapping
     public ApiResponse<SuccessBody<DocumentResponse>> post(@RequestBody CrewDocumentCreateRequest crewDocumentCreateRequest) {
-        DocumentResponse response = documentService.postCrewDocument(crewDocumentCreateRequest);
+        DocumentResponse response = crewDocumentService.create(crewDocumentCreateRequest);
         return ApiResponseGenerator.success(response);
     }
 
     @Operation(summary = "랜덤 위키 글 조회", description = "랜덤으로 위키 글을 조회합니다.")
     @GetMapping("/random")
     public ApiResponse<SuccessBody<DocumentResponse>> getRandom() {
-        DocumentResponse response = documentService.getRandom();
+        DocumentResponse response = crewDocumentService.getRandom();
         return ApiResponseGenerator.success(response);
     }
 
@@ -56,8 +58,8 @@ public class DocumentController {
 
     @Operation(summary = "제목으로 위키 글 조회", description = "제목을 통해 위키 글을 조회합니다.")
     @GetMapping("title/{title}")
-    public ApiResponse<SuccessBody<Object>> get(@PathVariable String title) {
-        Object response = documentService.get(title);
+    public ApiResponse<SuccessBody<DocumentResponse>> get(@PathVariable String title) {
+        DocumentResponse response = crewDocumentService.getByTitle(title);
         return ApiResponseGenerator.success(response);
     }
 
@@ -70,9 +72,9 @@ public class DocumentController {
 
     @Operation(summary = "UUID로 위키 글 조회", description = "UUID를 통해 위키 글을 조회합니다.")
     @GetMapping("uuid/{uuidText}")
-    public ApiResponse<SuccessBody<Object>> getByUuid(@PathVariable String uuidText) {
+    public ApiResponse<SuccessBody<DocumentResponse>> getByUuid(@PathVariable String uuidText) {
         UUID uuid = UUID.fromString(uuidText);
-        Object response = documentService.getByUuid(uuid);
+        DocumentResponse response = crewDocumentService.getByUuid(uuid);
         return ApiResponseGenerator.success(response);
     }
 
@@ -99,7 +101,7 @@ public class DocumentController {
     public ApiResponse<SuccessBody<DocumentResponse>> put(
             @RequestBody DocumentUpdateRequest documentUpdateRequest
     ) {
-        DocumentResponse response = documentService.put(documentUpdateRequest.uuid(), documentUpdateRequest);
+        DocumentResponse response = crewDocumentService.update(documentUpdateRequest.uuid(), documentUpdateRequest);
         return ApiResponseGenerator.success(response);
     }
 

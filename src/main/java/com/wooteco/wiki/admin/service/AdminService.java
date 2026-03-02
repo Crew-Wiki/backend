@@ -1,19 +1,16 @@
 package com.wooteco.wiki.admin.service;
 
-import com.wooteco.wiki.document.service.DocumentService;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class AdminService {
 
-    private final DocumentService documentService;
-
-    public AdminService(DocumentService documentService) {
-        this.documentService = documentService;
-    }
+    private final CrewDocumentService crewDocumentService;
 
     public void deleteDocumentByDocumentUuid(UUID documentUuid) {
-        documentService.deleteByUuid(documentUuid);
+        crewDocumentService.deleteByUuid(documentUuid);
     }
 }

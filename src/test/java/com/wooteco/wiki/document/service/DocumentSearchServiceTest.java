@@ -2,6 +2,7 @@ package com.wooteco.wiki.document.service;
 
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.DocumentType;
 import com.wooteco.wiki.document.domain.dto.DocumentSearchResponse;
 import com.wooteco.wiki.document.fixture.DocumentFixture;
@@ -25,7 +26,7 @@ class DocumentSearchServiceTest {
     private DocumentSearchService documentSearchService;
 
     @Autowired
-    private DocumentService documentService;
+    private CrewDocumentService crewDocumentService;
 
     @Autowired
     private OrganizationDocumentRepository organizationDocumentRepository;
@@ -34,9 +35,9 @@ class DocumentSearchServiceTest {
     @Test
     void search_success_byKeywordPrefix() {
         // given
-        documentService.postCrewDocument(
+        crewDocumentService.create(
                 DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
-        documentService.postCrewDocument(
+        crewDocumentService.create(
                 DocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L, UUID.randomUUID()));
 
         // when
@@ -63,7 +64,7 @@ class DocumentSearchServiceTest {
     @Test
     void search_success_byOrganizationDocumentType() {
         // given
-        documentService.postCrewDocument(
+        crewDocumentService.create(
                 DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
         OrganizationDocument organizationDocument = OrganizationDocumentFixture.create("title2", "content", "writer",
                 15L, UUID.randomUUID());
