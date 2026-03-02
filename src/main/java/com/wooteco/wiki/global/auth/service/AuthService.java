@@ -4,7 +4,7 @@ import com.wooteco.wiki.admin.domain.Admin;
 import com.wooteco.wiki.admin.domain.dto.AdminResponse;
 import com.wooteco.wiki.admin.domain.dto.LoginRequest;
 import com.wooteco.wiki.global.auth.Role;
-import com.wooteco.wiki.global.auth.domain.dto.TokenInfoDto;
+import com.wooteco.wiki.global.auth.domain.dto.TokenInfoResponse;
 import com.wooteco.wiki.global.auth.domain.dto.TokenResponse;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
@@ -26,10 +26,10 @@ public class AuthService {
     public TokenResponse login(LoginRequest loginRequest) {
         Admin admin = adminRepository.findOneByLoginIdAndPassword(loginRequest.loginId(), loginRequest.password())
                 .orElseThrow(() -> new WikiException(ErrorCode.ADMIN_NOT_FOUND));
-        return createToken(TokenInfoDto.of(admin, Role.ROLE_ADMIN));
+        return createToken(TokenInfoResponse.of(admin, Role.ROLE_ADMIN));
     }
 
-    public TokenResponse createToken(TokenInfoDto tokenInfoDto) {
+    public TokenResponse createToken(TokenInfoResponse tokenInfoDto) {
         String accessToken = jwtTokenProvider.createToken(tokenInfoDto);
         return new TokenResponse(accessToken);
     }

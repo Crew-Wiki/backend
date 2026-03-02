@@ -19,7 +19,7 @@ class AdminRepositoryTest {
 
     @Nested
     @DisplayName("loginId와 password로 Admin을 찾는 기능")
-    class findOneByLoginIdAndPassword {
+    class FindOneByLoginIdAndPassword {
 
         @DisplayName("유효한 loginId와 password로 Admin을 반환한다.")
         @Test
@@ -41,7 +41,7 @@ class AdminRepositoryTest {
 
         @DisplayName("알맞지 않는 loginId와 password로 Optional.isEmpty를 반환한다.")
         @Test
-        void findOneByLoginIdAndPassword_isEmpty_byInValidLoginIdAndPassword() {
+        void findOneByLoginIdAndPassword_success_byInvalidCredentials() {
             // given
             adminRepository.save(new Admin("admin", "password"));
 

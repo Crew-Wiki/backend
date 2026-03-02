@@ -38,11 +38,11 @@ class OrganizationEventServiceTest {
 
     @Nested
     @DisplayName("조직 이벤트 생성 시")
-    class Create {
+    class Post {
 
         @Test
         @DisplayName("유효한 값이면 저장되고 UUID가 반환된다.")
-        void create_success() {
+        void post_success_byValidRequest() {
             // given
             OrganizationDocument orgDoc = OrganizationDocumentFixture.createDefault();
             organizationDocumentRepository.save(orgDoc);
@@ -75,7 +75,7 @@ class OrganizationEventServiceTest {
 
         @Test
         @DisplayName("존재하지 않는 조직 문서 UUID면 404 예외가 발생한다.")
-        void create_fail_orgDocNotFound() {
+        void post_fail_byOrganizationDocumentNotFound() {
             // given
             OrganizationEventCreateRequest req = new OrganizationEventCreateRequest(
                     "회의",
@@ -91,101 +91,102 @@ class OrganizationEventServiceTest {
                     .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ORGANIZATION_DOCUMENT_NOT_FOUND);
         }
 
-        @Nested
-        @DisplayName("조직 이벤트 수정 시")
-        class Update {
+    }
 
-            @Test
-            @DisplayName("전달된 값으로 갱신된다.")
-            void update_success() {
-                // given: 선행으로 문서 + 이벤트 하나 생성
-                OrganizationDocument orgDoc = OrganizationDocumentFixture.createDefault();
-                organizationDocumentRepository.save(orgDoc);
+    @Nested
+    @DisplayName("조직 이벤트 수정 시")
+    class Put {
 
-                OrganizationEventCreateRequest createReq = new OrganizationEventCreateRequest(
-                        "분기 워크숍",
-                        "OKR 점검",
-                        "밍트",
-                        LocalDate.now(),
-                        orgDoc.getUuid()
-                );
-                UUID eventUuid = organizationEventService.post(createReq).organizationEventUuid();
+        @Test
+        @DisplayName("전달된 값으로 갱신된다.")
+        void put_success_byUpdatedValues() {
+            // given: 선행으로 문서 + 이벤트 하나 생성
+            OrganizationDocument orgDoc = OrganizationDocumentFixture.createDefault();
+            organizationDocumentRepository.save(orgDoc);
 
-                OrganizationEventUpdateRequest req = new OrganizationEventUpdateRequest(
-                        "분기 워크숍(보강)",
-                        "OKR + 액션아이템",
-                        "밍트2",
-                        LocalDate.now().plusDays(1)
-                );
+            OrganizationEventCreateRequest createReq = new OrganizationEventCreateRequest(
+                    "분기 워크숍",
+                    "OKR 점검",
+                    "밍트",
+                    LocalDate.now(),
+                    orgDoc.getUuid()
+            );
+            UUID eventUuid = organizationEventService.post(createReq).organizationEventUuid();
 
-                // when
-                OrganizationEventUpdateResponse res = organizationEventService.put(eventUuid, req);
+            OrganizationEventUpdateRequest req = new OrganizationEventUpdateRequest(
+                    "분기 워크숍(보강)",
+                    "OKR + 액션아이템",
+                    "밍트2",
+                    LocalDate.now().plusDays(1)
+            );
 
-                // then
-                OrganizationEvent found = organizationEventRepository.findByUuid(eventUuid).orElseThrow();
+            // when
+            OrganizationEventUpdateResponse res = organizationEventService.put(eventUuid, req);
 
-                assertSoftly(softly -> {
-                    softly.assertThat(res.organizationEventUuid()).isEqualTo(eventUuid);
-                    softly.assertThat(found.getTitle()).isEqualTo(req.title());
-                    softly.assertThat(found.getContents()).isEqualTo(req.contents());
-                    softly.assertThat(found.getWriter()).isEqualTo(req.writer());
-                    softly.assertThat(found.getOccurredAt()).isEqualTo(req.occurredAt());
-                });
-            }
+            // then
+            OrganizationEvent found = organizationEventRepository.findByUuid(eventUuid).orElseThrow();
 
-            @Test
-            @DisplayName("존재하지 않는 이벤트 UUID면 404 예외가 발생한다.")
-            void update_fail_eventNotFound() {
-                // given
-                OrganizationEventUpdateRequest updateReq = new OrganizationEventUpdateRequest(
-                        "x", "y", "z", LocalDate.now()
-                );
-
-                // then
-                assertThatThrownBy(() ->
-                        organizationEventService.put(UUID.randomUUID(), updateReq))
-                        .isInstanceOf(WikiException.class)
-                        .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ORGANIZATION_EVENT_NOT_FOUND);
-            }
+            assertSoftly(softly -> {
+                softly.assertThat(res.organizationEventUuid()).isEqualTo(eventUuid);
+                softly.assertThat(found.getTitle()).isEqualTo(req.title());
+                softly.assertThat(found.getContents()).isEqualTo(req.contents());
+                softly.assertThat(found.getWriter()).isEqualTo(req.writer());
+                softly.assertThat(found.getOccurredAt()).isEqualTo(req.occurredAt());
+            });
         }
 
-        @Nested
-        @DisplayName("조직 이벤트 삭제 시")
-        class Delete {
+        @Test
+        @DisplayName("존재하지 않는 이벤트 UUID면 404 예외가 발생한다.")
+        void put_fail_byEventNotFound() {
+            // given
+            OrganizationEventUpdateRequest updateReq = new OrganizationEventUpdateRequest(
+                    "x", "y", "z", LocalDate.now()
+            );
 
-            @Test
-            @DisplayName("정상적으로 삭제된다.")
-            void delete_success() {
-                // given
-                OrganizationDocument orgDoc = OrganizationDocumentFixture.createDefault();
-                organizationDocumentRepository.save(orgDoc);
+            // then
+            assertThatThrownBy(() ->
+                    organizationEventService.put(UUID.randomUUID(), updateReq))
+                    .isInstanceOf(WikiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ORGANIZATION_EVENT_NOT_FOUND);
+        }
+    }
 
-                OrganizationEventCreateRequest createReq = new OrganizationEventCreateRequest(
-                        "분기 워크숍",
-                        "OKR 점검",
-                        "밍트",
-                        LocalDate.now(),
-                        orgDoc.getUuid()
-                );
-                UUID eventUuid = organizationEventService.post(createReq).organizationEventUuid();
+    @Nested
+    @DisplayName("조직 이벤트 삭제 시")
+    class Delete {
 
-                // when
-                organizationEventService.delete(eventUuid);
+        @Test
+        @DisplayName("정상적으로 삭제된다.")
+        void delete_success_byExistingEvent() {
+            // given
+            OrganizationDocument orgDoc = OrganizationDocumentFixture.createDefault();
+            organizationDocumentRepository.save(orgDoc);
 
-                // then
-                assertSoftly(softly -> {
-                    softly.assertThat(organizationEventRepository.findByUuid(eventUuid)).isEmpty();
-                });
-            }
+            OrganizationEventCreateRequest createReq = new OrganizationEventCreateRequest(
+                    "분기 워크숍",
+                    "OKR 점검",
+                    "밍트",
+                    LocalDate.now(),
+                    orgDoc.getUuid()
+            );
+            UUID eventUuid = organizationEventService.post(createReq).organizationEventUuid();
 
-            @Test
-            @DisplayName("존재하지 않는 이벤트 UUID면 404 예외가 발생한다.")
-            void delete_fail_eventNotFound() {
-                // then
-                assertThatThrownBy(() -> organizationEventService.delete(UUID.randomUUID()))
-                        .isInstanceOf(WikiException.class)
-                        .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ORGANIZATION_EVENT_NOT_FOUND);
-            }
+            // when
+            organizationEventService.delete(eventUuid);
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(organizationEventRepository.findByUuid(eventUuid)).isEmpty();
+            });
+        }
+
+        @Test
+        @DisplayName("존재하지 않는 이벤트 UUID면 404 예외가 발생한다.")
+        void delete_fail_byEventNotFound() {
+            // then
+            assertThatThrownBy(() -> organizationEventService.delete(UUID.randomUUID()))
+                    .isInstanceOf(WikiException.class)
+                    .hasFieldOrPropertyWithValue("errorCode", ErrorCode.ORGANIZATION_EVENT_NOT_FOUND);
         }
     }
 }

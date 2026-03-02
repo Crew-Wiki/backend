@@ -9,8 +9,8 @@ import com.wooteco.wiki.document.service.DocumentServiceJava;
 import com.wooteco.wiki.global.common.ApiResponse;
 import com.wooteco.wiki.global.common.ApiResponse.SuccessBody;
 import com.wooteco.wiki.global.common.ApiResponseGenerator;
-import com.wooteco.wiki.global.common.PageRequestDto;
-import com.wooteco.wiki.global.common.ResponseDto;
+import com.wooteco.wiki.global.common.PagingRequest;
+import com.wooteco.wiki.global.common.PagedResponse;
 import com.wooteco.wiki.history.domain.dto.HistoryDetailResponse;
 import com.wooteco.wiki.history.domain.dto.HistoryResponse;
 import com.wooteco.wiki.history.service.HistoryService;
@@ -50,7 +50,7 @@ public class DocumentController {
 
     @Operation(summary = "위키 글 전체 조회", description = "페이지네이션을 통해 모든 위키 글을 조회합니다.")
     @GetMapping("")
-    public ApiResponse<SuccessBody<ResponseDto<List<DocumentListResponse>>>> findAll(@ModelAttribute PageRequestDto pageRequestDto) {
+    public ApiResponse<SuccessBody<PagedResponse<List<DocumentListResponse>>>> findAll(@ModelAttribute PagingRequest pageRequestDto) {
         Page<Document> pageResponses = documentService.findAll(pageRequestDto);
         Page<DocumentListResponse> responses = pageResponses.map(DocumentListResponse::from);
         return ApiResponseGenerator.success(convertToResponse(responses));
@@ -80,9 +80,9 @@ public class DocumentController {
 
     @Operation(summary = "문서 로그 목록 조회", description = "문서 UUID로 해당 문서의 로그 목록을 페이지네이션을 통해 조회합니다.")
     @GetMapping("uuid/{uuidText}/log")
-    public ApiResponse<SuccessBody<ResponseDto<List<HistoryResponse>>>> getLogs(
+    public ApiResponse<SuccessBody<PagedResponse<List<HistoryResponse>>>> getLogs(
             @PathVariable String uuidText,
-            @ModelAttribute PageRequestDto pageRequestDto
+            @ModelAttribute PagingRequest pageRequestDto
     ) {
         UUID uuid = UUID.fromString(uuidText);
         Page<HistoryResponse> pageResponses = historyService.findAllByDocumentUuid(uuid, pageRequestDto);
@@ -141,8 +141,8 @@ public class DocumentController {
         return ApiResponseGenerator.success(HttpStatus.NO_CONTENT);
     }
 
-    private <T> ResponseDto<List<T>> convertToResponse(Page<T> pageResponses) {
-        return ResponseDto.of(
+    private <T> PagedResponse<List<T>> convertToResponse(Page<T> pageResponses) {
+        return PagedResponse.of(
                 pageResponses.getNumber(),
                 pageResponses.getTotalPages(),
                 pageResponses.getContent()

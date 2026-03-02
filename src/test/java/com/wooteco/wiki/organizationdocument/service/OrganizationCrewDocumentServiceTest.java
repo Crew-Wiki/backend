@@ -96,11 +96,11 @@ class OrganizationCrewDocumentServiceTest {
 
     @DisplayName("조직 문서를 조회할 때")
     @Nested
-    class Find {
+    class FindByUuid {
 
         @DisplayName("올바른 값으로 조회된다.")
         @Test
-        void find_success_byValidData() {
+        void findByUuid_success_byValidData() {
             // given
             UUID uuid = UUID.randomUUID();
             OrganizationDocument organizationDocument = OrganizationDocumentFixture
@@ -133,7 +133,7 @@ class OrganizationCrewDocumentServiceTest {
 
         @DisplayName("이미 있는 문서 이름이라면 예외가 발생한다.")
         @Test
-        void create_success_byValidData() {
+        void create_fail_byDuplicateTitle() {
             // given
             UUID uuid = UUID.randomUUID();
             OrganizationDocument organizationDocument = OrganizationDocumentFixture
@@ -153,7 +153,7 @@ class OrganizationCrewDocumentServiceTest {
 
         @DisplayName("첫 번째 로그가 저장된다.")
         @Test
-        void create_success_savesFirstHistory() {
+        void create_success_byFirstHistorySaved() {
             // given
             CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
             CrewDocument savedCrewDocument = crewDocumentRepository.save(crewDocument);

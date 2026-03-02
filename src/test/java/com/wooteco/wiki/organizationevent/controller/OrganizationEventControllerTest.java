@@ -49,11 +49,11 @@ class OrganizationEventControllerTest {
 
     @Nested
     @DisplayName("조직 이벤트 생성 시")
-    class Create {
+    class Post {
 
         @Test
         @DisplayName("유효한 값이면 저장된다.")
-        void create_success() {
+        void post_success_byValidRequest() {
             Map<String, Object> body = Map.of(
                     "title", "분기 워크숍",
                     "contents", "OKR 점검",
@@ -74,7 +74,7 @@ class OrganizationEventControllerTest {
 
         @Test
         @DisplayName("검증 실패시 400 예외가 발생한다.")
-        void create_fail_400_validation() {
+        void post_fail_byValidationError() {
             Map<String, Object> body = Map.of(
                     "title", "   ",
                     "contents", "메모",
@@ -94,7 +94,7 @@ class OrganizationEventControllerTest {
 
         @Test
         @DisplayName("존재하지 않은 조직 문서 uuid일 경우 404 예외가 발생한다.")
-        void create_fail_404_orgDocNotFound() {
+        void post_fail_byOrganizationDocumentNotFound() {
             Map<String, Object> body = Map.of(
                     "title", "회의",
                     "contents", "아젠다",
@@ -115,11 +115,11 @@ class OrganizationEventControllerTest {
 
     @Nested
     @DisplayName("조직 문서를 수정 시")
-    class Update {
+    class Put {
 
         @Test
         @DisplayName("전달된 값으로 갱신된다.")
-        void update_success() {
+        void put_success_byUpdatedValues() {
             OrganizationEvent event = OrganizationEventFixture.createDefault(doc);
             organizationEventRepository.save(event);
             UUID eventUuid = event.getUuid();
@@ -145,7 +145,7 @@ class OrganizationEventControllerTest {
 
         @Test
         @DisplayName("이벤트가 존재하지 않을 경우 404 예외가 발생한다.")
-        void update_fail_404_eventNotFound() {
+        void put_fail_byEventNotFound() {
             Map<String, Object> body = Map.of(
                     "title", "x",
                     "contents", "y",
@@ -164,7 +164,7 @@ class OrganizationEventControllerTest {
 
         @Test
         @DisplayName("검증이 실패할 경우 400 예외가 발생한다.")
-        void update_fail_400_validation() {
+        void put_fail_byValidationError() {
             OrganizationEvent event = OrganizationEventFixture.createDefault(doc);
             organizationEventRepository.save(event);
             UUID eventUuid = event.getUuid();
@@ -192,7 +192,7 @@ class OrganizationEventControllerTest {
 
         @Test
         @DisplayName("정상적으로 삭제된다.")
-        void delete_success() {
+        void delete_success_byExistingEvent() {
             OrganizationEvent event = OrganizationEventFixture.createDefault(doc);
             organizationEventRepository.save(event);
             UUID eventUuid = event.getUuid();
@@ -206,7 +206,7 @@ class OrganizationEventControllerTest {
 
         @Test
         @DisplayName("이벤트 없을 경우 404 예외가 발생한다.")
-        void delete_fail_404_eventNotFound() {
+        void delete_fail_byEventNotFound() {
             RestAssured.given().log().all()
                     .when()
                     .delete("/organization-events/{uuid}", UUID.randomUUID())

@@ -3,7 +3,7 @@ package com.wooteco.wiki.document.service;
 import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.domain.dto.DocumentUuidResponse;
 import com.wooteco.wiki.document.repository.DocumentRepository;
-import com.wooteco.wiki.global.common.PageRequestDto;
+import com.wooteco.wiki.global.common.PagingRequest;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import java.util.List;
@@ -21,8 +21,9 @@ public class DocumentService {
 
     private final DocumentRepository documentRepository;
 
-    public Page<Document> findAll(PageRequestDto requestDto) {
-        return documentRepository.findAll(requestDto.toPageable());
+    @Transactional(readOnly = true)
+    public Page<Document> findAll(PagingRequest pagingRequest) {
+        return documentRepository.findAll(pagingRequest.toPageable());
     }
 
     public DocumentUuidResponse getUuidByTitle(String title) {

@@ -33,7 +33,7 @@ class DocumentSearchServiceTest {
 
     @DisplayName("검색어로 시작하는 문서들을 찾아 리스트로 반환한다.")
     @Test
-    void search_success() {
+    void search_success_byKeywordPrefix() {
         // given
         crewDocumentService.create(
                 DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
@@ -49,7 +49,7 @@ class DocumentSearchServiceTest {
 
     @DisplayName("검색어와 일치하는 문서가 없으면 빈 리스트를 반환한다.")
     @Test
-    void search_empty() {
+    void search_success_byNoMatch() {
         // given
         String keyword = "존재하지않는문서";
 
@@ -62,7 +62,7 @@ class DocumentSearchServiceTest {
 
     @DisplayName("조직 문서라면 타입이 조직문서로 나온다.")
     @Test
-    void search_success_has_valid_type() {
+    void search_success_byOrganizationDocumentType() {
         // given
         crewDocumentService.create(
                 DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));

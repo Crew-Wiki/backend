@@ -1,6 +1,6 @@
 package com.wooteco.wiki.global.auth;
 
-import com.wooteco.wiki.global.auth.domain.dto.TokenInfoDto;
+import com.wooteco.wiki.global.auth.domain.dto.TokenInfoResponse;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import io.jsonwebtoken.Claims;
@@ -30,7 +30,7 @@ public class JwtTokenProvider {
         this.secretKey = Keys.hmacShaKeyFor(strSecretKey.getBytes());
     }
 
-    public String createToken(TokenInfoDto tokenInfoDto) {
+    public String createToken(TokenInfoResponse tokenInfoDto) {
 
         Map<String, ?> claims = getMyClaimMap(tokenInfoDto);
 
@@ -49,7 +49,7 @@ public class JwtTokenProvider {
         }
     }
 
-    private Map<String, ?> getMyClaimMap(TokenInfoDto tokenInfoDto) {
+    private Map<String, ?> getMyClaimMap(TokenInfoResponse tokenInfoDto) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", tokenInfoDto.id());
         map.put("role", tokenInfoDto.role());
