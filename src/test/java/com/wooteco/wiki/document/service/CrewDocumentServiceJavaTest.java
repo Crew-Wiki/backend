@@ -5,7 +5,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
@@ -47,7 +47,7 @@ class CrewDocumentServiceJavaTest {
 
     @BeforeEach
     void setUp() {
-        CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+        CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
         savedCrewDocument = documentRepository.save(crewDocument);
         savedDocumentUuid = savedCrewDocument.getUuid();
     }

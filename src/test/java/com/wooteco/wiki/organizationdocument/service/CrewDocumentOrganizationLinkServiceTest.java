@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
@@ -45,7 +45,7 @@ class CrewDocumentOrganizationLinkServiceTest {
 
         @BeforeEach
         void setUp() {
-            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+            CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
             savedCrewDocument = crewDocumentRepository.save(crewDocument);
 
             OrganizationDocument organizationDocument = OrganizationDocumentFixture.createDefault();
@@ -80,7 +80,7 @@ class CrewDocumentOrganizationLinkServiceTest {
 
         @BeforeEach
         void setUp() {
-            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+            CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
             savedCrewDocument = crewDocumentRepository.save(crewDocument);
 
             OrganizationDocument organizationDocument = OrganizationDocumentFixture.createDefault();

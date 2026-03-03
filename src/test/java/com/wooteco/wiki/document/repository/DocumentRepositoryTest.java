@@ -5,8 +5,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.domain.DocumentType;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
-import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +44,7 @@ public class DocumentRepositoryTest {
         @Test
         void findUuidByTitle_success_byExistsDocument() {
             // given
-            CrewDocument savedCrewDocument = documentRepository.save(DocumentFixture.createDefaultCrewDocument());
+            CrewDocument savedCrewDocument = documentRepository.save(CrewDocumentFixture.createDefaultCrewDocument());
 
             // when
             Optional<UUID> actual = documentRepository.findUuidByTitle(savedCrewDocument.getTitle());
@@ -64,7 +63,7 @@ public class DocumentRepositoryTest {
         void findAll_success_byMixedDocumentTypes() {
             // given
             documentRepository.save(
-                    DocumentFixture.createCrewDocument("crew문서", "content1", "writer1", 10L, UUID.randomUUID()));
+                    CrewDocumentFixture.createCrewDocument("crew문서", "content1", "writer1", 10L, UUID.randomUUID()));
             documentRepository.save(
                     OrganizationDocumentFixture.create("org문서", "content2", "writer2", 15L, UUID.randomUUID()));
 
@@ -86,9 +85,9 @@ public class DocumentRepositoryTest {
         void findAll_success_byOnlyCrewDocuments() {
             // given
             documentRepository.save(
-                    DocumentFixture.createCrewDocument("crew1", "content1", "writer1", 10L, UUID.randomUUID()));
+                    CrewDocumentFixture.createCrewDocument("crew1", "content1", "writer1", 10L, UUID.randomUUID()));
             documentRepository.save(
-                    DocumentFixture.createCrewDocument("crew2", "content2", "writer2", 15L, UUID.randomUUID()));
+                    CrewDocumentFixture.createCrewDocument("crew2", "content2", "writer2", 15L, UUID.randomUUID()));
 
             // when
             List<Document> result = documentRepository.findAll();
@@ -124,9 +123,9 @@ public class DocumentRepositoryTest {
         void findAll_success_bySomeData() {
             // given
             documentRepository.save(
-                    DocumentFixture.createCrewDocument("title1", "content1", "writer1", 10L, UUID.randomUUID()));
+                    CrewDocumentFixture.createCrewDocument("title1", "content1", "writer1", 10L, UUID.randomUUID()));
             documentRepository.save(
-                    DocumentFixture.createCrewDocument("title2", "content2", "writer2", 11L, UUID.randomUUID()));
+                    CrewDocumentFixture.createCrewDocument("title2", "content2", "writer2", 11L, UUID.randomUUID()));
 
             // when
             List<Document> crewDocuments = documentRepository.findAll();
@@ -157,7 +156,7 @@ public class DocumentRepositoryTest {
         void setUp() {
             uuid = UUID.randomUUID();
 
-            CrewDocument crewDocument = DocumentFixture.createCrewDocument("titl1", "content1", "writer1", 10L, uuid);
+            CrewDocument crewDocument = CrewDocumentFixture.createCrewDocument("titl1", "content1", "writer1", 10L, uuid);
             savedCrewDocument = documentRepository.save(crewDocument);
 
         }
@@ -182,9 +181,9 @@ public class DocumentRepositoryTest {
         void findAllByUuidIn_success_byUuidSet() {
             // given
             CrewDocument doc1 = documentRepository.save(
-                    DocumentFixture.createCrewDocument("title1", "content1", "writer1", 10L, UUID.randomUUID()));
+                    CrewDocumentFixture.createCrewDocument("title1", "content1", "writer1", 10L, UUID.randomUUID()));
             CrewDocument doc2 = documentRepository.save(
-                    DocumentFixture.createCrewDocument("title2", "content2", "writer2", 20L, UUID.randomUUID()));
+                    CrewDocumentFixture.createCrewDocument("title2", "content2", "writer2", 20L, UUID.randomUUID()));
 
             Set<UUID> uuids = Set.of(doc1.getUuid(), doc2.getUuid());
 

@@ -4,21 +4,18 @@ import static com.wooteco.wiki.global.exception.ErrorCode.DOCUMENT_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.domain.dto.CrewDocumentCreateRequest;
 import com.wooteco.wiki.document.domain.dto.DocumentResponse;
-import com.wooteco.wiki.document.domain.dto.DocumentUpdateRequest;
 import com.wooteco.wiki.document.domain.dto.DocumentUuidResponse;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.common.PagingRequest;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
-import com.wooteco.wiki.history.domain.History;
-import com.wooteco.wiki.history.fixture.HistoryFixture;
 import com.wooteco.wiki.history.repository.HistoryRepository;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,36 +38,13 @@ class DocumentServiceTest {
     @Autowired
     private DocumentService documentService;
     @Autowired
+    private CrewDocumentService crewDocumentService;
+    @Autowired
     private DocumentRepository documentRepository;
     @Autowired
     private HistoryRepository historyRepository;
 
-    @DisplayName("문서 조회 기능")
-    @Nested
-    class GetByUuid {
 
-        @DisplayName("문서 조회시, 해당 문서의 마지막 로그 번호를 가져온다.")
-        @Test
-        void getByUuid_success_byLatestVersionFromHistory() {
-            // given
-            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
-            CrewDocument savedCrewDocument = documentRepository.save(crewDocument);
-
-            History history = HistoryFixture.create("test", "test", "tesst", 150, LocalDateTime.of(2025, 7, 15, 10, 0, 0),
-                    savedCrewDocument, 20L);
-            historyRepository.save(history);
-
-            // when
-            DocumentUpdateRequest documentUpdateRequest = new DocumentUpdateRequest("test", "test", "test", 150L,
-                    savedCrewDocument.getUuid());
-
-            documentService.put(savedCrewDocument.getUuid(), documentUpdateRequest);
-            DocumentResponse documentResponse = documentService.getByUuid(savedCrewDocument.getUuid());
-
-            // then
-            assertThat(documentResponse.latestVersion()).isEqualTo(21L);
-        }
-    }
 
     @Nested
     @DisplayName("문서 제목으로 조회하면 UUID를 반환하는 기능")
@@ -80,8 +54,8 @@ class DocumentServiceTest {
         @Test
         void getUuidByTitle_success_byExistsDocumentTitle() {
             // given
-            DocumentResponse documentResponse = documentService.postCrewDocument(
-                    DocumentFixture.createDocumentCreateRequestDefault());
+            DocumentResponse documentResponse = crewDocumentService.create(
+                    CrewDocumentFixture.createDocumentCreateRequestDefault());
 
             // when
             DocumentUuidResponse documentUuidResponse = documentService.getUuidByTitle(documentResponse.title());
@@ -110,33 +84,33 @@ class DocumentServiceTest {
         @BeforeEach
         public void beforeEach() {
             crewDocumentCreateRequests = List.of(
-                    DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title3", "content3", "writer3", 13L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title3", "content3", "writer3", 13L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title4", "content4", "writer4", 14L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title4", "content4", "writer4", 14L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title5", "content5", "writer5", 15L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title5", "content5", "writer5", 15L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title6", "content6", "writer6", 16L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title6", "content6", "writer6", 16L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title7", "content7", "writer7", 17L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title7", "content7", "writer7", 17L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title8", "content8", "writer8", 18L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title8", "content8", "writer8", 18L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title9", "content9", "writer9", 19L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title9", "content9", "writer9", 19L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title10", "content10", "writer10", 110L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title10", "content10", "writer10", 110L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title11", "content11", "writer11", 11L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title11", "content11", "writer11", 11L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title12", "content12", "writer12", 11L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title12", "content12", "writer12", 11L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title13", "content13", "writer13", 11L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title13", "content13", "writer13", 11L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title14", "content14", "writer14", 11L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title14", "content14", "writer14", 11L,
                             UUID.randomUUID())
             );
         }
@@ -146,9 +120,9 @@ class DocumentServiceTest {
         void findAll_success_bySomeData() {
             // given
             List<CrewDocumentCreateRequest> requestDtos = List.of(
-                    DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
                             UUID.randomUUID()),
-                    DocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L,
+                    CrewDocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L,
                             UUID.randomUUID())
             );
 
@@ -156,7 +130,7 @@ class DocumentServiceTest {
 
             // when
             for (CrewDocumentCreateRequest documentRequestDto : requestDtos) {
-                documentService.postCrewDocument(documentRequestDto);
+                crewDocumentService.create(documentRequestDto);
             }
 
             // then
@@ -180,7 +154,7 @@ class DocumentServiceTest {
             PagingRequest pageRequestDto = new PagingRequest();
 
             for (CrewDocumentCreateRequest documentRequestDto : crewDocumentCreateRequests) {
-                documentService.postCrewDocument(documentRequestDto);
+                crewDocumentService.create(documentRequestDto);
             }
 
             // when
@@ -205,7 +179,7 @@ class DocumentServiceTest {
             pageRequestDto.setSortDirection("DESC");
 
             for (CrewDocumentCreateRequest documentRequestDto : crewDocumentCreateRequests) {
-                documentService.postCrewDocument(documentRequestDto);
+                crewDocumentService.create(documentRequestDto);
             }
 
             // when
@@ -228,47 +202,13 @@ class DocumentServiceTest {
             pageRequestDto.setPageSize(5);
 
             for (CrewDocumentCreateRequest documentRequestDto : crewDocumentCreateRequests) {
-                documentService.postCrewDocument(documentRequestDto);
+                crewDocumentService.create(documentRequestDto);
             }
 
             // when & then
             WikiException ex = assertThrows(WikiException.class,
                     () -> documentService.findAll(pageRequestDto));
             assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PAGE_BAD_REQUEST);
-        }
-    }
-
-    @Nested
-    @DisplayName("문서 uuid로 삭제 기능")
-    class DeleteByUuid {
-
-        @DisplayName("존재하는 문서 id일 경우 문서가 로그들과 함께 삭제된다")
-        @Test
-        void deleteByUuid_success_byExistingDocument() {
-            // given
-            DocumentResponse documentResponse = documentService.postCrewDocument(
-                    DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
-                            UUID.randomUUID()));
-
-            // before then
-            assertThat(documentRepository.findAll()).hasSize(1);
-            assertThat(historyRepository.findAll()).hasSize(1);
-
-            // when
-            documentService.deleteByUuid(documentResponse.documentUUID());
-
-            // after then
-            assertThat(documentRepository.findAll()).hasSize(0);
-            assertThat(historyRepository.findAll()).hasSize(0);
-        }
-
-        @DisplayName("존재하지 않는 문서의 id일 경우 예외가 발생한다 : WikiException.DOCUMENT_NOT_FOUND")
-        @Test
-        void deleteByUuid_fail_byNonExistingDocument() {
-            // when & then
-            WikiException ex = assertThrows(WikiException.class,
-                    () -> documentService.deleteByUuid(UUID.randomUUID()));
-            assertThat(ex.getErrorCode()).isEqualTo(DOCUMENT_NOT_FOUND);
         }
     }
 
@@ -279,9 +219,9 @@ class DocumentServiceTest {
         UUID uuid1 = UUID.randomUUID();
         UUID uuid2 = UUID.randomUUID();
         CrewDocument doc1 = documentRepository.save(
-                DocumentFixture.createCrewDocument("title1", "content1", "writer1", 10L, uuid1));
+                CrewDocumentFixture.createCrewDocument("title1", "content1", "writer1", 10L, uuid1));
         CrewDocument doc2 = documentRepository.save(
-                DocumentFixture.createCrewDocument("title2", "content2", "writer2", 10L, uuid2));
+                CrewDocumentFixture.createCrewDocument("title2", "content2", "writer2", 10L, uuid2));
 
         Map<UUID, Integer> viewMap = Map.of(
                 uuid1, 5,
