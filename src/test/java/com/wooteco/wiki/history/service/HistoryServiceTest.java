@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.common.PagingRequest;
 import com.wooteco.wiki.global.exception.ErrorCode;
@@ -47,7 +47,7 @@ public class HistoryServiceTest {
     void setUp() {
         pageRequestDto = new PagingRequest();
         savedCrewDocument = documentRepository.save(
-                DocumentFixture.createCrewDocument("title", "content", "writer", 100L, UUID.randomUUID()));
+                CrewDocumentFixture.createCrewDocument("title", "content", "writer", 100L, UUID.randomUUID()));
         documentUuid = savedCrewDocument.getUuid();
 
         historyRepository.save(

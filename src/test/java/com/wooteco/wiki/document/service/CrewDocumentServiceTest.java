@@ -8,7 +8,7 @@ import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.dto.DocumentResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentUpdateRequest;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.history.domain.History;
@@ -36,13 +36,40 @@ class CrewDocumentServiceTest {
 
     @DisplayName("문서 조회 기능")
     @Nested
+    class GetByUuid {
+
+        @DisplayName("문서 조회시, 해당 문서의 마지막 로그 번호를 가져온다.")
+        @Test
+        void getByUuid_success_byLatestVersionFromHistory() {
+            // given
+            CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
+            CrewDocument savedCrewDocument = documentRepository.save(crewDocument);
+
+            History history = HistoryFixture.create("test", "test", "tesst", 150, LocalDateTime.of(2025, 7, 15, 10, 0, 0),
+                savedCrewDocument, 20L);
+            historyRepository.save(history);
+
+            // when
+            DocumentUpdateRequest documentUpdateRequest = new DocumentUpdateRequest("test", "test", "test", 150L,
+                savedCrewDocument.getUuid());
+
+            crewDocumentService.update(savedCrewDocument.getUuid(), documentUpdateRequest);
+            DocumentResponse documentResponse = crewDocumentService.getByUuid(savedCrewDocument.getUuid());
+
+            // then
+            assertThat(documentResponse.latestVersion()).isEqualTo(21L);
+        }
+    }
+
+    @DisplayName("문서 조회 기능")
+    @Nested
     class Find {
 
         @DisplayName("문서 조회시, 해당 문서의 마지막 로그 번호를 가져온다.")
         @Test
         void getDocumentLatestVersion_success_byExistsDocument() {
             // given
-            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+            CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
             CrewDocument savedCrewDocument = documentRepository.save(crewDocument);
 
             History history = HistoryFixture.create("test", "test", "tesst", 150,
@@ -71,7 +98,7 @@ class CrewDocumentServiceTest {
         void deleteById_success_byExistsId() {
             // given
             DocumentResponse documentResponse = crewDocumentService.create(
-                DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
+                CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
                     UUID.randomUUID()));
 
             // before then
@@ -89,6 +116,40 @@ class CrewDocumentServiceTest {
         @DisplayName("존재하지 않는 문서의 id일 경우 예외가 발생한다 : WikiException.DOCUMENT_NOT_FOUND")
         @Test
         void deleteById_throwsException_byNonExistsId() {
+            // when & then
+            WikiException ex = assertThrows(WikiException.class,
+                () -> crewDocumentService.deleteByUuid(UUID.randomUUID()));
+            assertThat(ex.getErrorCode()).isEqualTo(DOCUMENT_NOT_FOUND);
+        }
+    }
+
+    @Nested
+    @DisplayName("문서 uuid로 삭제 기능")
+    class DeleteByUuid {
+
+        @DisplayName("존재하는 문서 id일 경우 문서가 로그들과 함께 삭제된다")
+        @Test
+        void deleteByUuid_success_byExistingDocument() {
+            // given
+            DocumentResponse documentResponse = crewDocumentService.create(
+                CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
+                    UUID.randomUUID()));
+
+            // before then
+            assertThat(documentRepository.findAll()).hasSize(1);
+            assertThat(historyRepository.findAll()).hasSize(1);
+
+            // when
+            crewDocumentService.deleteByUuid(documentResponse.documentUUID());
+
+            // after then
+            assertThat(documentRepository.findAll()).hasSize(0);
+            assertThat(historyRepository.findAll()).hasSize(0);
+        }
+
+        @DisplayName("존재하지 않는 문서의 id일 경우 예외가 발생한다 : WikiException.DOCUMENT_NOT_FOUND")
+        @Test
+        void deleteByUuid_fail_byNonExistingDocument() {
             // when & then
             WikiException ex = assertThrows(WikiException.class,
                 () -> crewDocumentService.deleteByUuid(UUID.randomUUID()));

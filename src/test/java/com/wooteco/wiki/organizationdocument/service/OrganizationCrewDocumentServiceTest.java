@@ -4,7 +4,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
@@ -20,7 +20,6 @@ import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepo
 import com.wooteco.wiki.organizationevent.domain.OrganizationEvent;
 import com.wooteco.wiki.organizationevent.fixture.OrganizationEventFixture;
 import com.wooteco.wiki.organizationevent.repository.OrganizationEventRepository;
-import java.util.List;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -155,7 +154,7 @@ class OrganizationCrewDocumentServiceTest {
         @Test
         void create_success_byFirstHistorySaved() {
             // given
-            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+            CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
             CrewDocument savedCrewDocument = crewDocumentRepository.save(crewDocument);
 
             OrganizationDocumentCreateRequest organizationDocumentCreateRequest = new OrganizationDocumentCreateRequest(

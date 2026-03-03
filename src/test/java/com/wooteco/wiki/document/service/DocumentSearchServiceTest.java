@@ -5,7 +5,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.DocumentType;
 import com.wooteco.wiki.document.domain.dto.DocumentSearchResponse;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
@@ -36,9 +36,9 @@ class DocumentSearchServiceTest {
     void search_success_byKeywordPrefix() {
         // given
         crewDocumentService.create(
-                DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
+                CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
         crewDocumentService.create(
-                DocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L, UUID.randomUUID()));
+                CrewDocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L, UUID.randomUUID()));
 
         // when
         List<DocumentSearchResponse> result = documentSearchService.search("title");
@@ -65,7 +65,7 @@ class DocumentSearchServiceTest {
     void search_success_byOrganizationDocumentType() {
         // given
         crewDocumentService.create(
-                DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
+                CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
         OrganizationDocument organizationDocument = OrganizationDocumentFixture.create("title2", "content", "writer",
                 15L, UUID.randomUUID());
         organizationDocumentRepository.save(organizationDocument);
