@@ -10,6 +10,7 @@ import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.history.service.HistoryService;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
+import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentLinkRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
@@ -45,6 +46,14 @@ public class OrganizationDocumentService {
         historyService.save(savedOrganizationDocument);
         documentOrganizationLinkService.link(crewDocument, savedOrganizationDocument);
         return new OrganizationDocumentResponse(savedOrganizationDocument);
+    }
+
+    public OrganizationDocumentResponse link(OrganizationDocumentLinkRequest organizationDocumentLinkRequest) {
+        CrewDocument crewDocument = getCrewDocument(organizationDocumentLinkRequest.crewDocumentUuid());
+        OrganizationDocument organizationDocument = getOrganizationDocument(
+                organizationDocumentLinkRequest.organizationDocumentUuid());
+        documentOrganizationLinkService.link(crewDocument, organizationDocument);
+        return new OrganizationDocumentResponse(organizationDocument);
     }
 
     public OrganizationDocumentResponse update(OrganizationDocumentUpdateRequest organizationDocumentUpdateRequest) {
