@@ -4,6 +4,7 @@ import com.wooteco.wiki.global.common.ApiResponse;
 import com.wooteco.wiki.global.common.ApiResponse.SuccessBody;
 import com.wooteco.wiki.global.common.ApiResponseGenerator;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
+import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentLinkRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
@@ -38,6 +39,16 @@ public class OrganizationDocumentController {
             @RequestBody OrganizationDocumentCreateRequest organizationDocumentCreateRequest) {
         OrganizationDocumentResponse organizationDocumentResponse = organizationDocumentService.create(
                 organizationDocumentCreateRequest);
+
+        return ApiResponseGenerator.success(organizationDocumentResponse);
+    }
+
+    @Operation(summary = "기존 조직 문서를 크루 문서에 연결", description = "이미 존재하는 조직 문서를 크루 문서와 연결합니다.")
+    @PostMapping("/link")
+    public ApiResponse<SuccessBody<OrganizationDocumentResponse>> linkOrganizationDocument(
+            @RequestBody OrganizationDocumentLinkRequest organizationDocumentLinkRequest) {
+        OrganizationDocumentResponse organizationDocumentResponse = organizationDocumentService.link(
+                organizationDocumentLinkRequest);
 
         return ApiResponseGenerator.success(organizationDocumentResponse);
     }
