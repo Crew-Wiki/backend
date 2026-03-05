@@ -7,8 +7,10 @@ import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
+import com.wooteco.wiki.history.service.HistoryService;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
+import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentLinkRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
@@ -32,6 +34,7 @@ public class OrganizationDocumentService {
     private final DocumentRepository documentRepository;
     private final DocumentOrganizationLinkService documentOrganizationLinkService;
     private final CrewDocumentRepository crewDocumentRepository;
+    private final HistoryService historyService;
 
     public OrganizationDocumentResponse create(OrganizationDocumentCreateRequest organizationDocumentCreateRequest) {
         if (documentRepository.existsByTitle(organizationDocumentCreateRequest.title())) {
@@ -39,7 +42,16 @@ public class OrganizationDocumentService {
         }
         CrewDocument crewDocument = getCrewDocument(organizationDocumentCreateRequest.crewDocumentUuid());
         OrganizationDocument organizationDocument = organizationDocumentCreateRequest.toOrganizationDocument();
-        organizationDocumentRepository.save(organizationDocument);
+        OrganizationDocument savedOrganizationDocument = organizationDocumentRepository.save(organizationDocument);
+        historyService.save(savedOrganizationDocument);
+        documentOrganizationLinkService.link(crewDocument, savedOrganizationDocument);
+        return new OrganizationDocumentResponse(savedOrganizationDocument);
+    }
+
+    public OrganizationDocumentResponse link(OrganizationDocumentLinkRequest organizationDocumentLinkRequest) {
+        CrewDocument crewDocument = getCrewDocument(organizationDocumentLinkRequest.crewDocumentUuid());
+        OrganizationDocument organizationDocument = getOrganizationDocument(
+                organizationDocumentLinkRequest.organizationDocumentUuid());
         documentOrganizationLinkService.link(crewDocument, organizationDocument);
         return new OrganizationDocumentResponse(organizationDocument);
     }
@@ -56,6 +68,7 @@ public class OrganizationDocumentService {
                 organizationDocumentUpdateRequest.documentBytes(),
                 LocalDateTime.now()
         );
+        historyService.save(organizationDocument);
         return new OrganizationDocumentResponse(organizationDocument);
     }
 

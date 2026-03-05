@@ -2,9 +2,10 @@ package com.wooteco.wiki.document.service;
 
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.DocumentType;
 import com.wooteco.wiki.document.domain.dto.DocumentSearchResponse;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
@@ -25,19 +26,19 @@ class DocumentSearchServiceTest {
     private DocumentSearchService documentSearchService;
 
     @Autowired
-    private DocumentService documentService;
+    private CrewDocumentService crewDocumentService;
 
     @Autowired
     private OrganizationDocumentRepository organizationDocumentRepository;
 
     @DisplayName("검색어로 시작하는 문서들을 찾아 리스트로 반환한다.")
     @Test
-    void search_success() {
+    void search_success_byKeywordPrefix() {
         // given
-        documentService.postCrewDocument(
-                DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
-        documentService.postCrewDocument(
-                DocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L, UUID.randomUUID()));
+        crewDocumentService.create(
+                CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
+        crewDocumentService.create(
+                CrewDocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L, UUID.randomUUID()));
 
         // when
         List<DocumentSearchResponse> result = documentSearchService.search("title");
@@ -48,7 +49,7 @@ class DocumentSearchServiceTest {
 
     @DisplayName("검색어와 일치하는 문서가 없으면 빈 리스트를 반환한다.")
     @Test
-    void search_empty() {
+    void search_success_byNoMatch() {
         // given
         String keyword = "존재하지않는문서";
 
@@ -61,10 +62,10 @@ class DocumentSearchServiceTest {
 
     @DisplayName("조직 문서라면 타입이 조직문서로 나온다.")
     @Test
-    void search_success_has_valid_type() {
+    void search_success_byOrganizationDocumentType() {
         // given
-        documentService.postCrewDocument(
-                DocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
+        crewDocumentService.create(
+                CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, UUID.randomUUID()));
         OrganizationDocument organizationDocument = OrganizationDocumentFixture.create("title2", "content", "writer",
                 15L, UUID.randomUUID());
         organizationDocumentRepository.save(organizationDocument);
@@ -75,8 +76,8 @@ class DocumentSearchServiceTest {
         // then
         assertSoftly(softly -> {
             softly.assertThat(result).hasSize(2);
-            softly.assertThat(result.get(0).getDocumentType()).isEqualTo(DocumentType.CREW);
-            softly.assertThat(result.get(1).getDocumentType()).isEqualTo(DocumentType.ORGANIZATION);
+            softly.assertThat(result.get(0).documentType()).isEqualTo(DocumentType.CREW);
+            softly.assertThat(result.get(1).documentType()).isEqualTo(DocumentType.ORGANIZATION);
         });
     }
 } 

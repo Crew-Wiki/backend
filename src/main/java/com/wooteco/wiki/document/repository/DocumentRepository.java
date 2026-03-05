@@ -26,4 +26,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     Optional<Long> findIdByUuid(@Param("uuid") UUID documentUuid);
 
     List<Document> findAllByUuidIn(Set<UUID> uuids);
+
+    void deleteByUuid(UUID documentUuid);
 }

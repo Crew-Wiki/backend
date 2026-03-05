@@ -5,7 +5,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
@@ -47,14 +47,14 @@ class CrewDocumentServiceJavaTest {
 
     @BeforeEach
     void setUp() {
-        CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+        CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
         savedCrewDocument = documentRepository.save(crewDocument);
         savedDocumentUuid = savedCrewDocument.getUuid();
     }
 
     @DisplayName("특정 문서에 대한 조직 문서 제목과 Uuid들을 조회할 때")
     @Nested
-    class searchOrganizationCrewDocument {
+    class SearchOrganizationDocument {
 
         @BeforeEach
         void setUp() {
@@ -90,7 +90,7 @@ class CrewDocumentServiceJavaTest {
 
         @DisplayName("존재하지 않는 특정 문서의 Uuid로 요청한다면 예외가 발생한다 : DOCUMENT_NOT_FOUND")
         @Test
-        void searchOrganizationDocument_error_byNonExistingDocumentUuid() {
+        void searchOrganizationDocument_fail_byNonExistingDocumentUuid() {
             // when & then
             WikiException ex = assertThrows(WikiException.class,
                     () -> documentService.searchOrganizationDocument(UUID.randomUUID()));
@@ -100,7 +100,7 @@ class CrewDocumentServiceJavaTest {
 
     @DisplayName("특정 문서에 대해 조직 문서를 제거할 때에")
     @Nested
-    class deleteOrganizationCrewDocument {
+    class DeleteOrganizationDocument {
 
         private UUID savedOrganizationDocumentUuid;
 
@@ -129,7 +129,7 @@ class CrewDocumentServiceJavaTest {
 
         @DisplayName("존재하지 않는 특정 문서의 Uuid로 요청한다면 예외가 발생한다 : DOCUMENT_NOT_FOUND")
         @Test
-        void deleteOrganizationDocument_error_byNonExistingDocumentUuid() {
+        void deleteOrganizationDocument_fail_byNonExistingDocumentUuid() {
             // when & then
             WikiException ex = assertThrows(WikiException.class,
                     () -> documentService.deleteOrganizationDocument(UUID.randomUUID(), savedOrganizationDocumentUuid));
@@ -138,7 +138,7 @@ class CrewDocumentServiceJavaTest {
 
         @DisplayName("존재하지 않는 특정 조직 문서의 Uuid로 요청한다면 예외가 발생한다 : ORGANIZATION_DOCUMENT_NOT_FOUND")
         @Test
-        void deleteOrganizationDocument_error_byNonExistingOrganizationDocumentUuid() {
+        void deleteOrganizationDocument_fail_byNonExistingOrganizationDocumentUuid() {
             // when & then
             WikiException ex = assertThrows(WikiException.class,
                     () -> documentService.deleteOrganizationDocument(savedDocumentUuid, UUID.randomUUID()));

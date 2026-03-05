@@ -5,7 +5,7 @@ import static com.wooteco.wiki.global.exception.ErrorCode.VERSION_NOT_FOUND;
 
 import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.repository.DocumentRepository;
-import com.wooteco.wiki.global.common.PageRequestDto;
+import com.wooteco.wiki.global.common.PagingRequest;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.history.domain.History;
 import com.wooteco.wiki.history.domain.dto.HistoryDetailResponse;
@@ -47,7 +47,7 @@ public class HistoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<HistoryResponse> findAllByDocumentUuid(UUID documentUuid, PageRequestDto pageRequestDto) {
+    public Page<HistoryResponse> findAllByDocumentUuid(UUID documentUuid, PagingRequest pageRequestDto) {
         Long documentId = documentRepository.findIdByUuid(documentUuid)
                 .orElseThrow(() -> new WikiException(DOCUMENT_NOT_FOUND));
 

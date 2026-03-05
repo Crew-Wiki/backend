@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
-import com.wooteco.wiki.global.common.PageRequestDto;
+import com.wooteco.wiki.global.common.PagingRequest;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.history.domain.dto.HistoryResponse;
@@ -39,25 +39,26 @@ public class HistoryServiceTest {
     @Autowired
     private HistoryRepository historyRepository;
 
+    private PagingRequest pageRequestDto;
+    private UUID documentUuid;
+    private CrewDocument savedCrewDocument;
+
+    @BeforeEach
+    void setUp() {
+        pageRequestDto = new PagingRequest();
+        savedCrewDocument = documentRepository.save(
+                CrewDocumentFixture.createCrewDocument("title", "content", "writer", 100L, UUID.randomUUID()));
+        documentUuid = savedCrewDocument.getUuid();
+
+        historyRepository.save(
+                HistoryFixture.create("t1", "c1", "w1", 10L, LocalDateTime.now(), savedCrewDocument, 1L));
+        historyRepository.save(
+                HistoryFixture.create("t1", "c2", "w2", 20L, LocalDateTime.now(), savedCrewDocument, 2L));
+    }
+
     @Nested
     @DisplayName("documentUuid로 요청 시 로그 리스트 반환하는 기능")
-    class findAllByCrewDocumentUuid {
-
-        private PageRequestDto pageRequestDto = new PageRequestDto();
-        private UUID documentUuid;
-        private CrewDocument savedCrewDocument;
-
-        @BeforeEach
-        void setUp() {
-            savedCrewDocument = documentRepository.save(
-                    DocumentFixture.createCrewDocument("title", "content", "writer", 100L, UUID.randomUUID()));
-            documentUuid = savedCrewDocument.getUuid();
-
-            historyRepository.save(
-                    HistoryFixture.create("t1", "c1", "w1", 10L, LocalDateTime.now(), savedCrewDocument, 1L));
-            historyRepository.save(
-                    HistoryFixture.create("t1", "c2", "w2", 20L, LocalDateTime.now(), savedCrewDocument, 2L));
-        }
+    class FindAllByDocumentUuid {
 
         @DisplayName("documentUuid에 해당하는 로그들이 반환된다")
         @Test
@@ -76,7 +77,7 @@ public class HistoryServiceTest {
 
         @DisplayName("버전 번호가 순차적으로 부여된다")
         @Test
-        void findAllByDocumentUuid_versionsAreNumberedCorrectly() {
+        void findAllByDocumentUuid_success_bySequentialVersions() {
             // when
             Page<HistoryResponse> actual = historyService.findAllByDocumentUuid(documentUuid, pageRequestDto);
 
@@ -90,7 +91,7 @@ public class HistoryServiceTest {
 
         @DisplayName("존재하지 않는 documentUuid로 요청 시 예외가 발생한다 : WikiException.DOCUMENT_NOT_FOUND")
         @Test
-        void findAllByDocumentUuid_throwsException_byNonExistsDocumentUuid() {
+        void findAllByDocumentUuid_fail_byNonExistsDocumentUuid() {
             // given
             UUID invalidUuid = UUID.randomUUID();
 
@@ -100,9 +101,15 @@ public class HistoryServiceTest {
             assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.DOCUMENT_NOT_FOUND);
         }
 
+    }
+
+    @Nested
+    @DisplayName("로그 저장 기능")
+    class Save {
+
         @DisplayName("로그 저장 시 최신 version을 제공한다.")
         @Test
-        void save_versionIsNumberedCorrectly() {
+        void save_success_byIncrementedVersion() {
             // when
             Document updatedDocument = savedCrewDocument.update("test_document_2", "contents", "writer1", 120L,
                     LocalDateTime.now());

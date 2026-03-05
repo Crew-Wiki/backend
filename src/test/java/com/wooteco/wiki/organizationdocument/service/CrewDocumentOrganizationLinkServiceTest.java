@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
-import com.wooteco.wiki.document.fixture.DocumentFixture;
+import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
@@ -45,7 +45,7 @@ class CrewDocumentOrganizationLinkServiceTest {
 
         @BeforeEach
         void setUp() {
-            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+            CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
             savedCrewDocument = crewDocumentRepository.save(crewDocument);
 
             OrganizationDocument organizationDocument = OrganizationDocumentFixture.createDefault();
@@ -54,7 +54,7 @@ class CrewDocumentOrganizationLinkServiceTest {
 
         @DisplayName("특정 문서와 특정 조직 문서로 둘을 연결한다.")
         @Test
-        void link_success_byDocumentAndOrganizationDocument() {
+        void link_success_byCrewAndOrganizationDocument() {
             // when
             documentOrgDocLinkService.link(savedCrewDocument, savedOrganizationDocument);
 
@@ -73,14 +73,14 @@ class CrewDocumentOrganizationLinkServiceTest {
 
     @DisplayName("문서와 조직 문서 연결 해제 할 때에")
     @Nested
-    class UnLink {
+    class Unlink {
 
         private CrewDocument savedCrewDocument;
         private OrganizationDocument savedOrganizationDocument;
 
         @BeforeEach
         void setUp() {
-            CrewDocument crewDocument = DocumentFixture.createDefaultCrewDocument();
+            CrewDocument crewDocument = CrewDocumentFixture.createDefaultCrewDocument();
             savedCrewDocument = crewDocumentRepository.save(crewDocument);
 
             OrganizationDocument organizationDocument = OrganizationDocumentFixture.createDefault();
@@ -91,7 +91,7 @@ class CrewDocumentOrganizationLinkServiceTest {
 
         @DisplayName("특정 문서와 특정 조직 문서의 연결을 해제한다")
         @Test
-        void unLink_success_byDocumentAndOrganizationDocument() {
+        void unlink_success_byCrewAndOrganizationDocument() {
             // when
             documentOrgDocLinkService.unlink(savedCrewDocument, savedOrganizationDocument);
 
