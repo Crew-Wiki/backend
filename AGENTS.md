@@ -49,8 +49,8 @@ Do not place domain-specific logic inside `common/`.
 
 - `@Nested` classes must be named after the **production method** they test, in **UpperCamelCase**.
 - Test method names must follow this format:
-    - `productionMethod_success_condition`
-    - `productionMethod_fail_condition`
+  - `productionMethod_success_condition`
+  - `productionMethod_fail_condition`
 
 ```java
 @Nested
@@ -92,15 +92,15 @@ CrewDocument doc = DocumentFixture.createDefaultCrewDocument();
 ## 3. Naming Conventions
 
 - **Methods**: start with a verb. Do not include the entity name.
-    - Correct: `findById(Long id)`
-    - Incorrect: `getMember(Long id)`
+  - Correct: `findById(Long id)`
+  - Incorrect: `getMember(Long id)`
 
 - **Path variables**: be specific.
-    - Correct: `/api/{documentId}`
-    - Incorrect: `/api/{id}`
+  - Correct: `/api/{documentId}`
+  - Incorrect: `/api/{id}`
 
 - **DTOs**: use `Request` / `Response` suffixes. `Register` / `Update` are also acceptable for mutations.
-    - Examples: `DocumentSearchResponse`, `DocumentUpdateRequest`
+  - Examples: `DocumentSearchResponse`, `DocumentUpdateRequest`
 
 ---
 
@@ -114,7 +114,7 @@ Follow these rules strictly when writing or modifying code:
 4. One dot per line — avoid chaining across objects.
 5. No abbreviations.
 6. Keep classes small and focused.
-7. Maximum **2 instance variables** per class.
+7. Aim to minimize instance variables per class. JPA entities and DTOs may exceed this when necessary (e.g., audit fields, associations).
 8. Wrap collections in first-class collection classes.
 9. Avoid getters and setters unless strictly needed.
 
