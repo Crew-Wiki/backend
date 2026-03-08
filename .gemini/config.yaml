@@ -1,22 +1,27 @@
+# Disable playful or humorous responses in review comments
 have_fun: false
 
 code_review:
   disable: false
+  # Only comment on meaningful issues to reduce noise
   comment_severity_threshold: MEDIUM
+
+  # Prevent excessive comments on large PRs
   max_review_comments: 50
+
   pull_request_opened:
     help: false
     summary: true
     code_review: true
 
 ignore_patterns:
-  # Gradle
+  # Gradle wrapper files
   - "gradlew"
   - "gradlew.bat"
   - "gradle/wrapper/**"
 
-  # DB initialization
+  # Database initialization script
   - "src/main/resources/init.sql"
 
-  # Docs
+  # Documentation
   - "docs/**"
