@@ -12,8 +12,10 @@ import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentCreateRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentLinkRequest;
 import com.wooteco.wiki.organizationdocument.dto.request.OrganizationDocumentUpdateRequest;
+import com.wooteco.wiki.organizationdocument.dto.response.LinkedCrewDocumentResponse;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentAndEventResponse;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
+import com.wooteco.wiki.organizationdocument.repository.DocumentOrganizationLinkRepository;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
 import com.wooteco.wiki.organizationevent.dto.response.OrganizationEventResponse;
 import com.wooteco.wiki.organizationevent.repository.OrganizationEventRepository;
@@ -33,6 +35,7 @@ public class OrganizationDocumentService {
     private final OrganizationEventRepository organizationEventRepository;
     private final DocumentRepository documentRepository;
     private final DocumentOrganizationLinkService documentOrganizationLinkService;
+    private final DocumentOrganizationLinkRepository documentOrganizationLinkRepository;
     private final CrewDocumentRepository crewDocumentRepository;
     private final HistoryService historyService;
 
@@ -80,7 +83,12 @@ public class OrganizationDocumentService {
                 .stream()
                 .map(OrganizationEventResponse::new)
                 .toList();
-        return new OrganizationDocumentAndEventResponse(organizationDocument, organizationEventResponses);
+        List<LinkedCrewDocumentResponse> linkedCrewDocuments = documentOrganizationLinkRepository
+                .findAllByOrganizationDocumentWithCrewDocument(organizationDocument)
+                .stream()
+                .map(link -> new LinkedCrewDocumentResponse(link.getCrewDocument()))
+                .toList();
+        return new OrganizationDocumentAndEventResponse(organizationDocument, organizationEventResponses, linkedCrewDocuments);
     }
 
     private CrewDocument getCrewDocument(UUID uuid) {
