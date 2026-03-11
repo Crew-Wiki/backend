@@ -83,8 +83,8 @@ public class OrganizationDocumentService {
                 .stream()
                 .map(OrganizationEventResponse::new)
                 .toList();
-        List<LinkedCrewDocumentResponse> linkedCrewDocuments = documentOrganizationLinkRepository.findAllByOrganizationDocument(
-                        organizationDocument)
+        List<LinkedCrewDocumentResponse> linkedCrewDocuments = documentOrganizationLinkRepository
+                .findAllByOrganizationDocumentWithCrewDocument(organizationDocument)
                 .stream()
                 .map(link -> new LinkedCrewDocumentResponse(link.getCrewDocument()))
                 .toList();
