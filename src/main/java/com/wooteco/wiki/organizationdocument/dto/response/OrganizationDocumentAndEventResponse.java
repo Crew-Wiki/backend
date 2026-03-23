@@ -14,13 +14,15 @@ public record OrganizationDocumentAndEventResponse(
         String contents,
         String writer,
         LocalDateTime generateTime,
-        List<OrganizationEventResponse> organizationEventResponses
+        List<OrganizationEventResponse> organizationEventResponses,
+        List<LinkedCrewDocumentResponse> linkedCrewDocuments
 ) {
 
     public OrganizationDocumentAndEventResponse(
             OrganizationDocument organizationDocument,
-            List<OrganizationEventResponse> organizationEventResponses
+            List<OrganizationEventResponse> organizationEventResponses,
+            List<LinkedCrewDocumentResponse> linkedCrewDocuments
     ) {
-        this(organizationDocument.getId(), organizationDocument.getUuid(), organizationDocument.getTitle(), organizationDocument.getContents(), organizationDocument.getWriter(), organizationDocument.getGenerateTime(), organizationEventResponses);
+        this(organizationDocument.getId(), organizationDocument.getUuid(), organizationDocument.getTitle(), organizationDocument.getContents(), organizationDocument.getWriter(), organizationDocument.getGenerateTime(), organizationEventResponses, linkedCrewDocuments);
     }
 }
