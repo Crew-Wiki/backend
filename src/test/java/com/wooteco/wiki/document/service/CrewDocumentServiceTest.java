@@ -91,40 +91,6 @@ class CrewDocumentServiceTest {
 
     @Nested
     @DisplayName("문서 uuid로 삭제 기능")
-    class deleteByUuid {
-
-        @DisplayName("존재하는 문서 id일 경우 문서가 로그들과 함께 삭제된다")
-        @Test
-        void deleteById_success_byExistsId() {
-            // given
-            DocumentResponse documentResponse = crewDocumentService.create(
-                CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L,
-                    UUID.randomUUID()));
-
-            // before then
-            assertThat(documentRepository.findAll()).hasSize(1);
-            assertThat(historyRepository.findAll()).hasSize(1);
-
-            // when
-            crewDocumentService.deleteByUuid(documentResponse.documentUUID());
-
-            // after then
-            assertThat(documentRepository.findAll()).hasSize(0);
-            assertThat(historyRepository.findAll()).hasSize(0);
-        }
-
-        @DisplayName("존재하지 않는 문서의 id일 경우 예외가 발생한다 : WikiException.DOCUMENT_NOT_FOUND")
-        @Test
-        void deleteById_throwsException_byNonExistsId() {
-            // when & then
-            WikiException ex = assertThrows(WikiException.class,
-                () -> crewDocumentService.deleteByUuid(UUID.randomUUID()));
-            assertThat(ex.getErrorCode()).isEqualTo(DOCUMENT_NOT_FOUND);
-        }
-    }
-
-    @Nested
-    @DisplayName("문서 uuid로 삭제 기능")
     class DeleteByUuid {
 
         @DisplayName("존재하는 문서 id일 경우 문서가 로그들과 함께 삭제된다")
