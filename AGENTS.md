@@ -243,4 +243,4 @@ These names are standardized across the project. Do not rename or create alterna
 - When creating a new class, always check if a similar one already exists in `common/`.
 - When writing tests, always add a corresponding fixture if one does not exist.
 - Do not modify `build.gradle` unless explicitly asked.
-- If uncertain about a design decision, leave a `// TODO:` comment explaining the ambiguity rather than guessing. 
+- If uncertain about a design decision, leave a `// TODO:` comment explaining the ambiguity rather than guessing.
