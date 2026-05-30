@@ -8,7 +8,9 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: self-hosted
+    runs-on: [self-hosted, crew-wiki-prod]
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -43,21 +45,31 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:prod-latest
+            ${{ env.IMAGE_NAME }}:prod-${{ github.sha }}
 
   deploy:
     needs: build-and-push
-    runs-on: self-hosted
+    runs-on: [self-hosted, crew-wiki-prod]
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:prod-latest
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
       - name: Deploy to Server
         run: |
           set -euo pipefail
           BASE_DIR=/home/ubuntu/crew-wiki
-          IMG=${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:latest
+          CONTAINER_NAME=crew-wiki
 
           mkdir -p "$BASE_DIR"
+          cp docker-compose.yml "$BASE_DIR/docker-compose.yml"
+
           cat > "$BASE_DIR/.env" <<'EOF'
+          IMAGE_NAME=${{ env.IMAGE_NAME }}
+          CONTAINER_NAME=crew-wiki
+          HOST_PORT=${{ secrets.PROD_HOST_PORT || '8080' }}
           SPRING_PROFILES_ACTIVE=prod
           LOG_PATH=${{ secrets.LOG_PATH }}
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
@@ -65,16 +77,29 @@ jobs:
           PROD_DB_URL=${{ secrets.PROD_DB_URL }}
           PROD_DB_USERNAME=${{ secrets.PROD_DB_USERNAME }}
           PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
+          CORS_ALLOWED_ORIGINS=${{ secrets.PROD_CORS_ALLOWED_ORIGINS || 'https://crew-wiki.site, https://api.crew-wiki.site' }}
+          SWAGGER_SERVER_URL=${{ secrets.PROD_SWAGGER_SERVER_URL || 'https://api.crew-wiki.site' }}
           AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}
           AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}
           S3_BUCKET=${{ secrets.S3_BUCKET }}
           EOF
 
-          docker rm -f crew-wiki || true
-          docker pull "$IMG"
+          cd "$BASE_DIR"
+          if docker compose version >/dev/null 2>&1; then
+            COMPOSE="docker compose"
+          elif docker-compose --version >/dev/null 2>&1; then
+            COMPOSE="docker-compose"
+          else
+            echo "Docker Compose is not installed"
+            exit 1
+          fi
 
-          docker run -d \
-          --name crew-wiki \
-          --env-file "$BASE_DIR/.env" \
-          -p 8080:8080 \
-          "$IMG"
+          COMPOSE_PROJECT=$(docker inspect "$CONTAINER_NAME" \
+            --format '{{ index .Config.Labels "com.docker.compose.project" }}' 2>/dev/null || true)
+          if [ -z "$COMPOSE_PROJECT" ] && docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
+            docker rm -f "$CONTAINER_NAME"
+          fi
+
+          $COMPOSE --env-file "$BASE_DIR/.env" pull app
+          $COMPOSE --env-file "$BASE_DIR/.env" up -d --remove-orphans
+          $COMPOSE --env-file "$BASE_DIR/.env" ps
