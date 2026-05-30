@@ -22,3 +22,21 @@ cors:
 
 swagger:
   server-url: https://dev.api.crew-wiki.site
+
+security:
+  jwt:
+    token:
+      secret-key: local-development-secret-key-local-development-secret-key
+      expire-length: 3600000
+
+cloud:
+  aws:
+    credentials:
+      access-key: local
+      secret-key: local
+    s3:
+      bucket: local
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
