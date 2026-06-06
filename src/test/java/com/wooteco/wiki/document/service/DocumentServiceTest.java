@@ -21,7 +21,6 @@ import com.wooteco.wiki.history.repository.HistoryRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -252,7 +251,7 @@ class DocumentServiceTest {
             List<DocumentTitleListResponse> result = documentService.findAllTitles();
 
             // then
-            Assertions.assertThat(result).isEmpty();
+            assertThat(result).isEmpty();
         }
     }
 
@@ -279,7 +278,7 @@ class DocumentServiceTest {
         Document updated1 = documentRepository.findById(doc1.getId()).get();
         Document updated2 = documentRepository.findById(doc2.getId()).get();
 
-        Assertions.assertThat(updated1.getViewCount()).isEqualTo(5);
-        Assertions.assertThat(updated2.getViewCount()).isEqualTo(10);
+        assertThat(updated1.getViewCount()).isEqualTo(5);
+        assertThat(updated2.getViewCount()).isEqualTo(10);
     }
 }
