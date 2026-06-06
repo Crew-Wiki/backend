@@ -27,7 +27,6 @@ public class DocumentService {
         return documentRepository.findAll(pagingRequest.toPageable());
     }
 
-    @Transactional(readOnly = true)
     public List<DocumentTitleListResponse> findAllTitles() {
         return documentRepository.findAllTitles();
     }
@@ -53,4 +52,3 @@ public class DocumentService {
         documentRepository.saveAll(documents);
     }
 }
-
