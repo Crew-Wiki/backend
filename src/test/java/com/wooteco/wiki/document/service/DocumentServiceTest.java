@@ -2,6 +2,7 @@ package com.wooteco.wiki.document.service;
 
 import static com.wooteco.wiki.global.exception.ErrorCode.DOCUMENT_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.wooteco.wiki.admin.service.CrewDocumentService;
@@ -9,6 +10,7 @@ import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.domain.dto.CrewDocumentCreateRequest;
 import com.wooteco.wiki.document.domain.dto.DocumentResponse;
+import com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentUuidResponse;
 import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.DocumentRepository;
@@ -209,6 +211,48 @@ class DocumentServiceTest {
             WikiException ex = assertThrows(WikiException.class,
                     () -> documentService.findAll(pageRequestDto));
             assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PAGE_BAD_REQUEST);
+        }
+    }
+
+    @Nested
+    @DisplayName("전체 문서 제목 조회 기능")
+    class FindAllTitles {
+
+        @DisplayName("문서가 존재하면 제목과 UUID 목록을 반환한다.")
+        @Test
+        void findAllTitles_success_bySomeData() {
+            // given
+            UUID firstUuid = UUID.randomUUID();
+            UUID secondUuid = UUID.randomUUID();
+
+            crewDocumentService.create(
+                    CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, firstUuid));
+            crewDocumentService.create(
+                    CrewDocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L, secondUuid));
+
+            // when
+            List<DocumentTitleListResponse> result = documentService.findAllTitles();
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(result).hasSize(2);
+                softly.assertThat(result)
+                        .extracting(DocumentTitleListResponse::title)
+                        .containsExactly("title1", "title2");
+                softly.assertThat(result)
+                        .extracting(DocumentTitleListResponse::uuid)
+                        .containsExactly(firstUuid, secondUuid);
+            });
+        }
+
+        @DisplayName("문서가 존재하지 않으면 빈 리스트를 반환한다.")
+        @Test
+        void findAllTitles_success_byNoData() {
+            // when
+            List<DocumentTitleListResponse> result = documentService.findAllTitles();
+
+            // then
+            Assertions.assertThat(result).isEmpty();
         }
     }
 

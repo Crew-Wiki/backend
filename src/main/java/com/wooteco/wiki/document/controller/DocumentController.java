@@ -56,6 +56,13 @@ public class DocumentController {
         return ApiResponseGenerator.success(convertToResponse(responses));
     }
 
+    @Operation(summary = "위키 글 제목 전체 조회", description = "모든 위키 글의 제목과 UUID를 조회합니다.")
+    @GetMapping("/titles")
+    public ApiResponse<SuccessBody<List<DocumentTitleListResponse>>> findAllTitles() {
+        List<DocumentTitleListResponse> response = documentService.findAllTitles();
+        return ApiResponseGenerator.success(response);
+    }
+
     @Operation(summary = "제목으로 위키 글 조회", description = "제목을 통해 위키 글을 조회합니다.")
     @GetMapping("title/{title}")
     public ApiResponse<SuccessBody<DocumentResponse>> get(@PathVariable String title) {

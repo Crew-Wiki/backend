@@ -1,6 +1,7 @@
 package com.wooteco.wiki.document.service;
 
 import com.wooteco.wiki.document.domain.Document;
+import com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentUuidResponse;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.common.PagingRequest;
@@ -24,6 +25,11 @@ public class DocumentService {
     @Transactional(readOnly = true)
     public Page<Document> findAll(PagingRequest pagingRequest) {
         return documentRepository.findAll(pagingRequest.toPageable());
+    }
+
+    @Transactional(readOnly = true)
+    public List<DocumentTitleListResponse> findAllTitles() {
+        return documentRepository.findAllTitles();
     }
 
     public DocumentUuidResponse getUuidByTitle(String title) {
