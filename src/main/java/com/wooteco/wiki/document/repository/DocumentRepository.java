@@ -21,7 +21,6 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     @Query("""
         SELECT new com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse(d.title, d.uuid)
         FROM Document d
-        ORDER BY d.title
         """)
     List<DocumentTitleListResponse> findAllTitles();
 
