@@ -10,13 +10,4 @@ public record DocumentTitleListResponse(
         DocumentType documentType,
         LocalDateTime generateTime
 ) {
-
-    public DocumentTitleListResponse(
-            String title,
-            UUID uuid,
-            String documentType,
-            LocalDateTime generateTime
-    ) {
-        this(title, uuid, DocumentType.valueOf(documentType), generateTime);
-    }
 }
