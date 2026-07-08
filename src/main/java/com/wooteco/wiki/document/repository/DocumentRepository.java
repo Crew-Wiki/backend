@@ -19,8 +19,14 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     List<Document> findAllByTitleStartingWithOrderByTitle(String keyWord);
 
     @Query("""
-        SELECT new com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse(d.title, d.uuid)
+        SELECT new com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse(
+            d.title,
+            d.uuid,
+            d.dtype,
+            d.generateTime
+        )
         FROM Document d
+        ORDER BY d.title ASC
         """)
     List<DocumentTitleListResponse> findAllTitles();
 
