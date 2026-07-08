@@ -47,6 +47,9 @@ public abstract class Document {
     @Column(name = "view_count", nullable = false, columnDefinition = "INT DEFAULT 0 NOT NULL")
     protected Integer viewCount = 0;
 
+    @Column(name = "dtype", insertable = false, updatable = false)
+    private String dtype;
+
     public Document(final String title, final String contents, final String writer,
                     final Long documentBytes, final UUID uuid) {
         this.title = title;
