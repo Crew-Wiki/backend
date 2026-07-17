@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
+import com.wooteco.wiki.document.domain.DocumentType;
 import com.wooteco.wiki.document.domain.dto.CrewDocumentCreateRequest;
 import com.wooteco.wiki.document.domain.dto.DocumentResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse;
@@ -18,7 +19,9 @@ import com.wooteco.wiki.global.common.PagingRequest;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.history.repository.HistoryRepository;
+import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
 import java.util.List;
+import java.util.Objects;
 import java.util.Map;
 import java.util.UUID;
 import org.assertj.core.api.SoftAssertions;
@@ -217,30 +220,39 @@ class DocumentServiceTest {
     @DisplayName("전체 문서 제목 조회 기능")
     class FindAllTitles {
 
-        @DisplayName("문서가 존재하면 제목과 UUID 목록을 반환한다.")
+        @DisplayName("문서가 존재하면 제목, UUID, 문서 타입, 생성일 목록을 반환한다.")
         @Test
         void findAllTitles_success_bySomeData() {
             // given
             UUID firstUuid = UUID.randomUUID();
             UUID secondUuid = UUID.randomUUID();
+            UUID thirdUuid = UUID.randomUUID();
 
             crewDocumentService.create(
                     CrewDocumentFixture.createDocumentCreateRequest("title1", "content1", "writer1", 10L, firstUuid));
             crewDocumentService.create(
                     CrewDocumentFixture.createDocumentCreateRequest("title2", "content2", "writer2", 11L, secondUuid));
+            documentRepository.save(
+                    OrganizationDocumentFixture.create("title3", "content3", "writer3", 12L, thirdUuid));
 
             // when
             List<DocumentTitleListResponse> result = documentService.findAllTitles();
 
             // then
             assertSoftly(softly -> {
-                softly.assertThat(result).hasSize(2);
+                softly.assertThat(result).hasSize(3);
                 softly.assertThat(result)
                         .extracting(DocumentTitleListResponse::title)
-                        .containsExactly("title1", "title2");
+                        .containsExactlyInAnyOrder("title1", "title2", "title3");
                 softly.assertThat(result)
                         .extracting(DocumentTitleListResponse::uuid)
-                        .containsExactly(firstUuid, secondUuid);
+                        .containsExactlyInAnyOrder(firstUuid, secondUuid, thirdUuid);
+                softly.assertThat(result)
+                        .extracting(DocumentTitleListResponse::documentType)
+                        .containsExactlyInAnyOrder(DocumentType.CREW, DocumentType.CREW, DocumentType.ORGANIZATION);
+                softly.assertThat(result)
+                        .extracting(DocumentTitleListResponse::generateTime)
+                        .allMatch(Objects::nonNull);
             });
         }
 
