@@ -2,7 +2,13 @@ package com.wooteco.wiki.document.controller;
 
 import com.wooteco.wiki.admin.service.CrewDocumentService;
 import com.wooteco.wiki.document.domain.Document;
-import com.wooteco.wiki.document.domain.dto.*;
+import com.wooteco.wiki.document.domain.dto.CrewDocumentCreateRequest;
+import com.wooteco.wiki.document.domain.dto.DocumentListResponse;
+import com.wooteco.wiki.document.domain.dto.DocumentResponse;
+import com.wooteco.wiki.document.domain.dto.DocumentSearchResponse;
+import com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse;
+import com.wooteco.wiki.document.domain.dto.DocumentUpdateRequest;
+import com.wooteco.wiki.document.domain.dto.ViewFlushRequest;
 import com.wooteco.wiki.document.service.DocumentSearchService;
 import com.wooteco.wiki.document.service.DocumentService;
 import com.wooteco.wiki.document.service.DocumentServiceJava;
@@ -21,11 +27,20 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/document")
-@RequiredArgsConstructor
 public class DocumentController {
 
     private final CrewDocumentService crewDocumentService;
