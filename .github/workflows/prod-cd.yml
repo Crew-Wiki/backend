@@ -1,16 +1,35 @@
-name: prod-cd.yml
+name: prod-cd
 
 on:
   push:
     branches: ["main"]
-    paths:
-      - "**"
+
+  workflow_dispatch:
+    inputs:
+      deploy_mode:
+        description: "배포 방식을 선택하세요"
+        required: true
+        default: "redeploy"
+        type: choice
+        options:
+          - redeploy
+          - rebuild-and-deploy
+
+concurrency:
+  group: crew-wiki-production
+  cancel-in-progress: false
 
 jobs:
   build-and-push:
+    if: >
+      github.event_name == 'push' ||
+      github.event.inputs.deploy_mode == 'rebuild-and-deploy'
+
     runs-on: [self-hosted, crew-wiki-prod]
+
     env:
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -49,22 +68,38 @@ jobs:
             ${{ env.IMAGE_NAME }}:prod-${{ github.sha }}
 
   deploy:
+    if: >
+      always() &&
+      (
+        needs.build-and-push.result == 'success' ||
+        needs.build-and-push.result == 'skipped'
+      )
+
     needs: build-and-push
     runs-on: [self-hosted, crew-wiki-prod]
+
     env:
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:prod-latest
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Deploy to Server
+        shell: bash
         run: |
           set -euo pipefail
+
           BASE_DIR=/home/ubuntu/crew-wiki
           CONTAINER_NAME=crew-wiki
 
           mkdir -p "$BASE_DIR"
+
+          echo "=== Copy docker-compose.yml ==="
           cp docker-compose.yml "$BASE_DIR/docker-compose.yml"
+
+          echo "=== Create production .env from current GitHub Secrets ==="
+          umask 077
 
           cat > "$BASE_DIR/.env" <<'EOF'
           IMAGE_NAME=${{ env.IMAGE_NAME }}
@@ -77,14 +112,17 @@ jobs:
           PROD_DB_URL=${{ secrets.PROD_DB_URL }}
           PROD_DB_USERNAME=${{ secrets.PROD_DB_USERNAME }}
           PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
-          CORS_ALLOWED_ORIGINS=${{ secrets.PROD_CORS_ALLOWED_ORIGINS || 'https://crew-wiki.site, https://api.crew-wiki.site' }}
+          CORS_ALLOWED_ORIGINS=${{ secrets.PROD_CORS_ALLOWED_ORIGINS || 'https://crew-wiki.site,https://api.crew-wiki.site' }}
           SWAGGER_SERVER_URL=${{ secrets.PROD_SWAGGER_SERVER_URL || 'https://api.crew-wiki.site' }}
           AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}
           AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}
           S3_BUCKET=${{ secrets.S3_BUCKET }}
           EOF
 
+          chmod 600 "$BASE_DIR/.env"
+
           cd "$BASE_DIR"
+
           if docker compose version >/dev/null 2>&1; then
             COMPOSE="docker compose"
           elif docker-compose --version >/dev/null 2>&1; then
@@ -94,12 +132,83 @@ jobs:
             exit 1
           fi
 
-          COMPOSE_PROJECT=$(docker inspect "$CONTAINER_NAME" \
-            --format '{{ index .Config.Labels "com.docker.compose.project" }}' 2>/dev/null || true)
-          if [ -z "$COMPOSE_PROJECT" ] && docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
+          echo "=== Handle non-Compose legacy container ==="
+          COMPOSE_PROJECT="$(
+            docker inspect "$CONTAINER_NAME" \
+              --format '{{ index .Config.Labels "com.docker.compose.project" }}' \
+              2>/dev/null || true
+          )"
+
+          if [ -z "$COMPOSE_PROJECT" ] &&
+             docker ps -a --format '{{.Names}}' | grep -qx "$CONTAINER_NAME"; then
             docker rm -f "$CONTAINER_NAME"
           fi
 
+          echo "=== Pull production image ==="
           $COMPOSE --env-file "$BASE_DIR/.env" pull app
-          $COMPOSE --env-file "$BASE_DIR/.env" up -d --remove-orphans
+
+          echo "=== Recreate container with current Secrets ==="
+          $COMPOSE \
+            --env-file "$BASE_DIR/.env" \
+            up -d \
+            --force-recreate \
+            --remove-orphans
+
+          echo "=== Compose status ==="
           $COMPOSE --env-file "$BASE_DIR/.env" ps
+
+      - name: Verify container
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CONTAINER_NAME=crew-wiki
+
+          for attempt in $(seq 1 30); do
+            RUNNING="$(
+              docker inspect "$CONTAINER_NAME" \
+                --format '{{.State.Running}}' \
+                2>/dev/null || echo false
+            )"
+
+            if [ "$RUNNING" = "true" ]; then
+              echo "Container is running"
+              exit 0
+            fi
+
+            echo "Waiting for container... ($attempt/30)"
+            sleep 2
+          done
+
+          echo "Container did not start"
+          docker logs --tail 200 "$CONTAINER_NAME" 2>&1 || true
+          exit 1
+
+      - name: Verify application API
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for attempt in $(seq 1 30); do
+            HTTP_STATUS="$(
+              curl \
+                -sS \
+                --max-time 5 \
+                -o /dev/null \
+                -w '%{http_code}' \
+                'http://127.0.0.1:8080/document?page=0&size=1' \
+                || true
+            )"
+
+            if [[ "$HTTP_STATUS" =~ ^2[0-9][0-9]$ ]]; then
+              echo "Application is healthy: HTTP $HTTP_STATUS"
+              exit 0
+            fi
+
+            echo "Waiting for application: HTTP ${HTTP_STATUS:-unreachable} ($attempt/30)"
+            sleep 3
+          done
+
+          echo "Application health check failed"
+          docker logs --tail 200 crew-wiki 2>&1 || true
+          exit 1
