@@ -26,6 +26,14 @@ jobs:
           docker inspect "$CONTAINER_NAME" \
             --format 'running={{.State.Running}} status={{.State.Status}} exit_code={{.State.ExitCode}} restart_count={{.RestartCount}} error={{json .State.Error}}'
 
+          echo "=== non-sensitive database URL metadata ==="
+          ENV_FILE=/home/ubuntu/crew-wiki/.env
+          DB_URL="$(sed -n 's/^PROD_DB_URL=//p' "$ENV_FILE")"
+          DB_SCHEMA="$(printf '%s' "$DB_URL" | sed -E 's#^jdbc:mysql://[^/]+/([^?]+).*#\1#')"
+          DB_ENCODING="$(printf '%s' "$DB_URL" | sed -nE 's#.*[?&]characterEncoding=([^&]+).*#\1#p')"
+          printf 'db_schema=%s\ncharacter_encoding=%s\n' "$DB_SCHEMA" "$DB_ENCODING"
+          unset DB_URL
+
           echo "=== localhost API ==="
           curl -sS \
             --max-time 10 \
