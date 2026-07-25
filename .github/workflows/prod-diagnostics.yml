@@ -1,0 +1,42 @@
+name: prod-diagnostics.yml
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: [self-hosted, crew-wiki-prod]
+    steps:
+      - name: Inspect production container (read-only)
+        shell: bash
+        run: |
+          set -uo pipefail
+          CONTAINER_NAME=crew-wiki
+
+          echo "=== container state ==="
+          docker ps -a \
+            --filter "name=^/${CONTAINER_NAME}$" \
+            --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+          if ! docker inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+            echo "container_missing=true"
+            exit 1
+          fi
+
+          docker inspect "$CONTAINER_NAME" \
+            --format 'running={{.State.Running}} status={{.State.Status}} exit_code={{.State.ExitCode}} restart_count={{.RestartCount}} error={{json .State.Error}}'
+
+          echo "=== localhost API ==="
+          curl -sS \
+            --max-time 10 \
+            -o /tmp/crew-wiki-health-body \
+            -w 'http_status=%{http_code}\n' \
+            'http://127.0.0.1:8080/document?page=0&size=1' || true
+
+          echo "=== application logs (redacted) ==="
+          docker logs --tail 200 "$CONTAINER_NAME" 2>&1 \
+            | sed -E \
+                -e 's#jdbc:mysql://[^ /?]+#jdbc:mysql://[redacted-host]#g' \
+                -e 's#(password|passwd|pwd)([=: ]+)[^ ,;]+#\1\2[redacted]#Ig'
+
+          test "$(docker inspect "$CONTAINER_NAME" --format '{{.State.Running}}')" = "true"
