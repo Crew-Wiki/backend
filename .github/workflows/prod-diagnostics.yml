@@ -32,6 +32,23 @@ jobs:
           DB_SCHEMA="$(printf '%s' "$DB_URL" | sed -E 's#^jdbc:mysql://[^/]+/([^?]+).*#\1#')"
           DB_ENCODING="$(printf '%s' "$DB_URL" | sed -nE 's#.*[?&]characterEncoding=([^&]+).*#\1#p')"
           printf 'db_schema=%s\ncharacter_encoding=%s\n' "$DB_SCHEMA" "$DB_ENCODING"
+
+          echo "=== visible non-system database schemas (read-only) ==="
+          DB_HOST="$(printf '%s' "$DB_URL" | sed -E 's#^jdbc:mysql://([^/:]+).*#\1#')"
+          DB_USER="$(sed -n 's/^PROD_DB_USERNAME=//p' "$ENV_FILE")"
+          DB_PASSWORD="$(sed -n 's/^PROD_DB_PASSWORD=//p' "$ENV_FILE")"
+          docker run --rm --network host \
+            -e MYSQL_PWD="$DB_PASSWORD" \
+            mysql:8.0 \
+            mysql \
+              --host="$DB_HOST" \
+              --port=3306 \
+              --user="$DB_USER" \
+              --ssl-mode=REQUIRED \
+              --batch \
+              --skip-column-names \
+              --execute="SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys') ORDER BY SCHEMA_NAME;"
+          unset DB_HOST DB_USER DB_PASSWORD
           unset DB_URL
 
           echo "=== localhost API ==="
