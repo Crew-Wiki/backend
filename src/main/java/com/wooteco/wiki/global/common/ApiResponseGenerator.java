@@ -10,7 +10,10 @@ public class ApiResponseGenerator {
         return new ApiResponse<>(new ApiResponse.SuccessBody<>(data, SuccessCode.SUCCESS), HttpStatus.OK);
     }
 
-    public static <D> ApiResponse<ApiResponse.SuccessBody<D>> success(D data, HttpStatus status) {
+    public static <D> ApiResponse<ApiResponse.SuccessBody<D>> success(
+            D data,
+            HttpStatus status
+    ) {
         return new ApiResponse<>(new ApiResponse.SuccessBody<>(data, SuccessCode.SUCCESS), status);
     }
 
@@ -18,7 +21,11 @@ public class ApiResponseGenerator {
         return new ApiResponse<>(new ApiResponse.SuccessBody<>(null, SuccessCode.SUCCESS), status);
     }
 
-    public static ApiResponse<ApiResponse.FailureBody> failure(ErrorCode code, String message, HttpStatus status) {
+    public static ApiResponse<ApiResponse.FailureBody> failure(
+            ErrorCode code,
+            String message,
+            HttpStatus status
+    ) {
         return new ApiResponse<>(new ApiResponse.FailureBody(code, message), status);
     }
 

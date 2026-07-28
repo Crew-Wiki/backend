@@ -6,8 +6,13 @@ import java.util.UUID;
 
 public class OrganizationDocumentFixture {
 
-    public static OrganizationDocument create(String title, String contents, String writer, Long documentBytes,
-                                              UUID uuid) {
+    public static OrganizationDocument create(
+            String title,
+            String contents,
+            String writer,
+            Long documentBytes,
+            UUID uuid
+    ) {
         return new OrganizationDocument(title, contents, writer, documentBytes, uuid);
     }
 
@@ -15,11 +20,13 @@ public class OrganizationDocumentFixture {
         return create("defaultOrganizationTitle", "defaultContent", "defaultWriter", 10L, UUID.randomUUID());
     }
 
-    public static DocumentOrganizationMappingAddRequest createDocumentOrganizationDocumentCreateRequest(String title,
-                                                                                                        String contents,
-                                                                                                        String writer,
-                                                                                                        Long documentBytes,
-                                                                                                        UUID uuid) {
+    public static DocumentOrganizationMappingAddRequest createDocumentOrganizationDocumentCreateRequest(
+            String title,
+            String contents,
+            String writer,
+            Long documentBytes,
+            UUID uuid
+    ) {
         return new DocumentOrganizationMappingAddRequest(title, contents, writer, documentBytes, uuid);
     }
 

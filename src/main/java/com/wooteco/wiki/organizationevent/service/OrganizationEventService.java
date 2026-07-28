@@ -32,8 +32,10 @@ public class OrganizationEventService {
         return OrganizationEventCreateResponse.from(savedEvent);
     }
 
-    public OrganizationEventUpdateResponse put(UUID organizationEventUuid,
-                                               OrganizationEventUpdateRequest request) {
+    public OrganizationEventUpdateResponse put(
+            UUID organizationEventUuid,
+            OrganizationEventUpdateRequest request
+    ) {
         OrganizationEvent organizationEvent = getOrganizationEvent(organizationEventUuid);
         organizationEvent.update(
                 request.title(),

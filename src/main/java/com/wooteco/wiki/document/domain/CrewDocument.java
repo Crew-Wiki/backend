@@ -13,8 +13,13 @@ import lombok.NoArgsConstructor;
 @Getter
 public class CrewDocument extends Document {
 
-    public CrewDocument(final String title, final String contents, final String writer,
-                        final Long documentBytes, final UUID uuid) {
+    public CrewDocument(
+            final String title,
+            final String contents,
+            final String writer,
+            final Long documentBytes,
+            final UUID uuid
+    ) {
         super(title, contents, writer, documentBytes, uuid);
     }
 

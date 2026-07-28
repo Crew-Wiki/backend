@@ -43,7 +43,10 @@ public class DocumentOrganizationLink {
             foreignKey = @ForeignKey(name = "fk_link_orgdoc"))
     private OrganizationDocument organizationDocument;
 
-    public DocumentOrganizationLink(CrewDocument crewDocument, OrganizationDocument organizationDocument) {
+    public DocumentOrganizationLink(
+            CrewDocument crewDocument,
+            OrganizationDocument organizationDocument
+    ) {
         this.crewDocument = crewDocument;
         this.organizationDocument = organizationDocument;
     }

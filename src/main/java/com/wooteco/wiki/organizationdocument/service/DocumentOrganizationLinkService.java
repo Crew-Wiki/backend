@@ -17,13 +17,19 @@ public class DocumentOrganizationLinkService {
 
     private final DocumentOrganizationLinkRepository documentOrgDocLinkRepository;
 
-    public void link(CrewDocument crewDocument, OrganizationDocument organizationDocument) {
+    public void link(
+            CrewDocument crewDocument,
+            OrganizationDocument organizationDocument
+    ) {
         DocumentOrganizationLink documentOrgDocLink = new DocumentOrganizationLink(crewDocument,
                 organizationDocument);
         documentOrgDocLinkRepository.save(documentOrgDocLink);
     }
 
-    public void unlink(CrewDocument crewDocument, OrganizationDocument organizationDocument) {
+    public void unlink(
+            CrewDocument crewDocument,
+            OrganizationDocument organizationDocument
+    ) {
         documentOrgDocLinkRepository.deleteByCrewDocumentAndOrganizationDocument(crewDocument, organizationDocument);
     }
 

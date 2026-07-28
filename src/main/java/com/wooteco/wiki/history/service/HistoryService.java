@@ -47,7 +47,10 @@ public class HistoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<HistoryResponse> findAllByDocumentUuid(UUID documentUuid, PagingRequest pageRequestDto) {
+    public Page<HistoryResponse> findAllByDocumentUuid(
+            UUID documentUuid,
+            PagingRequest pageRequestDto
+    ) {
         Long documentId = documentRepository.findIdByUuid(documentUuid)
                 .orElseThrow(() -> new WikiException(DOCUMENT_NOT_FOUND));
 
