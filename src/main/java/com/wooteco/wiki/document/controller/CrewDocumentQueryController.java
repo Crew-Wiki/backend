@@ -23,7 +23,7 @@ public class CrewDocumentQueryController {
     @Operation(summary = "기수별 크루 목록 조회", description = "기수에 속한 크루의 이름, 문서 UUID, 분야를 조회합니다.")
     @GetMapping("/crews")
     public ApiResponse<SuccessBody<List<GenerationCrewResponse>>> findAllByGeneration(
-            @RequestParam Integer generation
+            @RequestParam String generation
     ) {
         List<GenerationCrewResponse> response = crewDocumentQueryService.findAllByGeneration(generation);
         return ApiResponseGenerator.success(response);
