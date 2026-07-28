@@ -48,8 +48,15 @@ public class History {
     protected History() {
     }
 
-    public History(String title, String contents, String writer, Long documentBytes, LocalDateTime generateTime,
-                   Document document, Long version) {
+    public History(
+            String title,
+            String contents,
+            String writer,
+            Long documentBytes,
+            LocalDateTime generateTime,
+            Document document,
+            Long version
+    ) {
         this.title = title;
         this.contents = contents;
         this.writer = writer;

@@ -7,13 +7,22 @@ import org.springframework.http.ResponseEntity;
 
 public class ApiResponse<B> extends ResponseEntity<B> {
 
-    public ApiResponse(B body, HttpStatus status) {
+    public ApiResponse(
+            B body,
+            HttpStatus status
+    ) {
         super(body, status);
     }
 
-    public static record SuccessBody<D>(D data, SuccessCode code) {
+    public static record SuccessBody<D>(
+            D data,
+            SuccessCode code
+    ) {
     }
 
-    public static record FailureBody(ErrorCode code, String message) {
+    public static record FailureBody(
+            ErrorCode code,
+            String message
+    ) {
     }
 }

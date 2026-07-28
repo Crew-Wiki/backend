@@ -6,8 +6,13 @@ import java.util.UUID;
 
 public class CrewDocumentFixture {
 
-    public static CrewDocument createCrewDocument(String title, String content, String writer, Long documentBytes,
-                                                  UUID uuid) {
+    public static CrewDocument createCrewDocument(
+            String title,
+            String content,
+            String writer,
+            Long documentBytes,
+            UUID uuid
+    ) {
         return new CrewDocument(title, content, writer, documentBytes, uuid);
     }
 
@@ -15,8 +20,13 @@ public class CrewDocumentFixture {
         return createCrewDocument("defaultCrewTitle", "defaultContent", "defaultWriter", 10L, UUID.randomUUID());
     }
 
-    public static CrewDocumentCreateRequest createDocumentCreateRequest(String title, String contents, String writer,
-                                                                        Long documentBytes, UUID uuid) {
+    public static CrewDocumentCreateRequest createDocumentCreateRequest(
+            String title,
+            String contents,
+            String writer,
+            Long documentBytes,
+            UUID uuid
+    ) {
         return new CrewDocumentCreateRequest(title, contents, writer, documentBytes, uuid);
     }
 

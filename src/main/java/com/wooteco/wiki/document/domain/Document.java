@@ -53,8 +53,13 @@ public abstract class Document {
     @Column(name = "dtype", insertable = false, updatable = false)
     private DocumentType dtype;
 
-    public Document(final String title, final String contents, final String writer,
-                    final Long documentBytes, final UUID uuid) {
+    public Document(
+            final String title,
+            final String contents,
+            final String writer,
+            final Long documentBytes,
+            final UUID uuid
+    ) {
         this.title = title;
         this.contents = contents;
         this.writer = writer;

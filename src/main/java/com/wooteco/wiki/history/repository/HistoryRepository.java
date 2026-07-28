@@ -11,7 +11,10 @@ import org.springframework.data.repository.query.Param;
 public interface HistoryRepository extends JpaRepository<History, Long> {
 
     @Query("SELECT h FROM History h WHERE h.document.id = :documentId")
-    Page<History> findAllByDocumentId(Long documentId, Pageable pageable);
+    Page<History> findAllByDocumentId(
+            Long documentId,
+            Pageable pageable
+    );
 
     @Query("SELECT MAX(h.version) FROM History h WHERE h.document.id = :documentId")
     Optional<Long> findMaxVersionByDocumentId(@Param("documentId") Long documentId);

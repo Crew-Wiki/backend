@@ -28,7 +28,10 @@ public enum ErrorCode {
     private final String message;
     private final HttpStatus httpStatus;
 
-    ErrorCode(String message, HttpStatus httpStatus) {
+    ErrorCode(
+            String message,
+            HttpStatus httpStatus
+    ) {
         this.message = message;
         this.httpStatus = httpStatus;
     }

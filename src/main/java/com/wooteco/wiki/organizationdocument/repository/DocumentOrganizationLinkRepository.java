@@ -20,8 +20,10 @@ public interface DocumentOrganizationLinkRepository extends
             OrganizationDocument organizationDocument
     );
 
-    void deleteByCrewDocumentAndOrganizationDocument(CrewDocument crewDocument,
-                                                     OrganizationDocument organizationDocument);
+    void deleteByCrewDocumentAndOrganizationDocument(
+            CrewDocument crewDocument,
+            OrganizationDocument organizationDocument
+    );
 
     List<DocumentOrganizationLink> findAllByCrewDocument(CrewDocument crewDocument);
 
