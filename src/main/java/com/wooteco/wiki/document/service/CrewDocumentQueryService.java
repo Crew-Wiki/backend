@@ -15,27 +15,23 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CrewDocumentQueryService {
 
-    private static final String GENERATION_SUFFIX = "기";
-
     private final GenerationCrewQueryRepository generationCrewQueryRepository;
     private final CrewProfileExtractor crewProfileExtractor;
 
     @Transactional(readOnly = true)
-    public List<GenerationCrewResponse> findAllByGeneration(Integer generation) {
+    public List<GenerationCrewResponse> findAllByGeneration(String generation) {
         validateGeneration(generation);
-        String generationTitle = generation + GENERATION_SUFFIX;
         List<GenerationCrewOrganizationReadModel> readModels = generationCrewQueryRepository
-                .findAllByGenerationTitle(generationTitle);
+                .findAllByGenerationTitle(generation);
         GenerationCrewCandidates candidates = GenerationCrewCandidates.from(readModels);
         List<GenerationCrewResponse> responses = candidates.extractResponses(crewProfileExtractor);
         responses.sort(Comparator.comparing(GenerationCrewResponse::name));
         return List.copyOf(responses);
     }
 
-    private void validateGeneration(Integer generation) {
-        if (generation == null || generation <= 0) {
+    private void validateGeneration(String generation) {
+        if (generation == null || generation.isBlank()) {
             throw new WikiException(ErrorCode.VALIDATION_ERROR);
         }
     }
-
 }

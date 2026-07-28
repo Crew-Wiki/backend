@@ -47,18 +47,21 @@ class CrewDocumentQueryServiceTest {
     class FindAllByGeneration {
 
         @Test
-        @DisplayName("요청한 기수에 속한 크루만 반환한다.")
-        void findAllByGeneration_success_byMatchingGeneration() {
+        @DisplayName("요청한 조직 제목과 정확히 일치하는 기수의 크루만 반환한다.")
+        void findAllByGeneration_success_byExactGenerationTitle() {
             // given
             OrganizationDocument eighthGeneration = saveOrganizationDocument("8기");
+            OrganizationDocument spacedEighthGeneration = saveOrganizationDocument("8 기");
             OrganizationDocument seventhGeneration = saveOrganizationDocument("7기");
             CrewDocument eighthCrew = saveCrewDocument("가람(8기)");
-            CrewDocument seventhCrew = saveCrewDocument("나래(7기)");
+            CrewDocument spacedEighthCrew = saveCrewDocument("나래(8기)");
+            CrewDocument seventhCrew = saveCrewDocument("다온(7기)");
             saveLink(eighthCrew, eighthGeneration);
+            saveLink(spacedEighthCrew, spacedEighthGeneration);
             saveLink(seventhCrew, seventhGeneration);
 
             // when
-            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration(8);
+            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration("8기");
 
             // then
             assertSoftly(softly -> {
@@ -85,7 +88,7 @@ class CrewDocumentQueryServiceTest {
             saveLinks(androidCrew, generation, android);
 
             // when
-            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration(8);
+            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration("8기");
 
             // then
             assertThat(responses)
@@ -109,7 +112,7 @@ class CrewDocumentQueryServiceTest {
             saveLinks(multipleFieldCrew, generation, backend, frontend);
 
             // when
-            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration(8);
+            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration("8기");
 
             // then
             assertThat(responses)
@@ -130,7 +133,7 @@ class CrewDocumentQueryServiceTest {
             saveLink(plainCrew, generation);
 
             // when
-            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration(8);
+            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration("8기");
 
             // then
             assertThat(responses)
@@ -147,7 +150,7 @@ class CrewDocumentQueryServiceTest {
             saveLink(blankNameCrew, generation);
 
             // when
-            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration(8);
+            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration("8기");
 
             // then
             assertThat(responses).isEmpty();
@@ -166,7 +169,7 @@ class CrewDocumentQueryServiceTest {
             saveLink(secondCrew, generation);
 
             // when
-            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration(8);
+            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration("8기");
 
             // then
             assertThat(responses)
@@ -178,27 +181,27 @@ class CrewDocumentQueryServiceTest {
         @DisplayName("해당 기수의 크루가 없으면 빈 목록을 반환한다.")
         void findAllByGeneration_success_byNoCrew() {
             // when
-            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration(8);
+            List<GenerationCrewResponse> responses = crewDocumentQueryService.findAllByGeneration("8기");
 
             // then
             assertThat(responses).isEmpty();
         }
 
         @Test
-        @DisplayName("기수가 0이면 검증 예외가 발생한다.")
-        void findAllByGeneration_fail_byZeroGeneration() {
+        @DisplayName("기수가 공백이면 검증 예외가 발생한다.")
+        void findAllByGeneration_fail_byBlankGeneration() {
             // when & then
-            assertThatThrownBy(() -> crewDocumentQueryService.findAllByGeneration(0))
+            assertThatThrownBy(() -> crewDocumentQueryService.findAllByGeneration(" "))
                     .isInstanceOf(WikiException.class)
                     .extracting("errorCode")
                     .isEqualTo(ErrorCode.VALIDATION_ERROR);
         }
 
         @Test
-        @DisplayName("기수가 음수면 검증 예외가 발생한다.")
-        void findAllByGeneration_fail_byNegativeGeneration() {
+        @DisplayName("기수가 null이면 검증 예외가 발생한다.")
+        void findAllByGeneration_fail_byNullGeneration() {
             // when & then
-            assertThatThrownBy(() -> crewDocumentQueryService.findAllByGeneration(-1))
+            assertThatThrownBy(() -> crewDocumentQueryService.findAllByGeneration(null))
                     .isInstanceOf(WikiException.class)
                     .extracting("errorCode")
                     .isEqualTo(ErrorCode.VALIDATION_ERROR);

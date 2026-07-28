@@ -61,7 +61,7 @@ class CrewDocumentQueryControllerTest {
 
             // when & then
             RestAssured.given().log().all()
-                    .queryParam("generation", 8)
+                    .queryParam("generation", "8기")
                     .when()
                     .get("/document/crews")
                     .then().log().all()
@@ -80,24 +80,28 @@ class CrewDocumentQueryControllerTest {
         }
 
         @Test
-        @DisplayName("기수가 문자열이면 검증 실패를 반환한다.")
-        void findAllByGeneration_fail_byNonNumericGeneration() {
+        @DisplayName("기수가 빈 문자열이면 검증 실패를 반환한다.")
+        void findAllByGeneration_fail_byEmptyGeneration() {
             // when & then
-            assertValidationError("/document/crews?generation=eight");
+            assertValidationError("/document/crews?generation=");
         }
 
         @Test
-        @DisplayName("기수가 0이면 검증 실패를 반환한다.")
-        void findAllByGeneration_fail_byZeroGeneration() {
-            // when & then
-            assertValidationError("/document/crews?generation=0");
-        }
+        @DisplayName("입력한 조직 제목과 정확히 일치하는 기수가 없으면 빈 목록을 반환한다.")
+        void findAllByGeneration_success_byNoExactGenerationTitle() {
+            // given
+            CrewDocument crewDocument = saveCrewDocument("가람 (8기)");
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            saveLink(crewDocument, generation);
 
-        @Test
-        @DisplayName("기수가 음수면 검증 실패를 반환한다.")
-        void findAllByGeneration_fail_byNegativeGeneration() {
             // when & then
-            assertValidationError("/document/crews?generation=-1");
+            RestAssured.given().log().all()
+                    .queryParam("generation", "8")
+                    .when()
+                    .get("/document/crews")
+                    .then().log().all()
+                    .statusCode(HttpStatus.OK.value())
+                    .body("data", hasSize(0));
         }
     }
 
