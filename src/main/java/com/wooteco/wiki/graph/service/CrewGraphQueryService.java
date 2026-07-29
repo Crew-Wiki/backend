@@ -8,10 +8,13 @@ import com.wooteco.wiki.graph.dto.GraphEdgeType;
 import com.wooteco.wiki.graph.dto.GraphNodeResponse;
 import com.wooteco.wiki.graph.repository.CrewGraphQueryRepository;
 import com.wooteco.wiki.graph.repository.CrewGraphReadModel;
+import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
+import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -23,14 +26,29 @@ import org.springframework.transaction.annotation.Transactional;
 public class CrewGraphQueryService {
 
     private final CrewGraphQueryRepository crewGraphQueryRepository;
+    private final OrganizationDocumentRepository organizationDocumentRepository;
     private final CrewDocumentReferenceExtractor crewDocumentReferenceExtractor;
 
     @Transactional(readOnly = true)
     public CrewGraphResponse findByGeneration(String generation) {
+        return findByGeneration(generation, null);
+    }
+
+    @Transactional(readOnly = true)
+    public CrewGraphResponse findByGeneration(
+            String generation,
+            UUID organizationDocumentUuid
+    ) {
         validateGeneration(generation);
         List<CrewGraphReadModel> readModels = crewGraphQueryRepository.findAllCrewDocumentsByGenerationTitle(generation);
-        List<GraphNodeResponse> nodes = createNodes(readModels);
-        List<GraphEdgeResponse> edges = createEdges(readModels);
+        List<GraphNodeResponse> nodes = new ArrayList<>(createCrewNodes(readModels));
+        List<GraphEdgeResponse> edges = new ArrayList<>(createReferenceEdges(readModels));
+        addOrganizationGraphIfSelected(
+                generation,
+                organizationDocumentUuid,
+                nodes,
+                edges
+        );
         return CrewGraphResponse.of(nodes, edges);
     }
 
@@ -40,7 +58,7 @@ public class CrewGraphQueryService {
         }
     }
 
-    private List<GraphNodeResponse> createNodes(List<CrewGraphReadModel> readModels) {
+    private List<GraphNodeResponse> createCrewNodes(List<CrewGraphReadModel> readModels) {
         List<GraphNodeResponse> nodes = new ArrayList<>();
         for (CrewGraphReadModel readModel : readModels) {
             GraphNodeResponse node = GraphNodeResponse.fromCrewDocument(
@@ -52,8 +70,8 @@ public class CrewGraphQueryService {
         return List.copyOf(nodes);
     }
 
-    private List<GraphEdgeResponse> createEdges(List<CrewGraphReadModel> readModels) {
-        Set<UUID> nodeDocumentUuids = createNodeDocumentUuids(readModels);
+    private List<GraphEdgeResponse> createReferenceEdges(List<CrewGraphReadModel> readModels) {
+        Set<UUID> nodeDocumentUuids = createCrewDocumentUuids(readModels);
         Set<GraphEdgeResponse> edges = new HashSet<>();
         for (CrewGraphReadModel readModel : readModels) {
             addReferenceEdges(readModel, nodeDocumentUuids, edges);
@@ -65,7 +83,7 @@ public class CrewGraphQueryService {
         return List.copyOf(sortedEdges);
     }
 
-    private Set<UUID> createNodeDocumentUuids(List<CrewGraphReadModel> readModels) {
+    private Set<UUID> createCrewDocumentUuids(List<CrewGraphReadModel> readModels) {
         Set<UUID> documentUuids = new HashSet<>();
         for (CrewGraphReadModel readModel : readModels) {
             documentUuids.add(readModel.documentUuid());
@@ -121,5 +139,64 @@ public class CrewGraphQueryService {
                 sourceDocumentUuid,
                 GraphEdgeType.REFERENCE
         );
+    }
+
+    private void addOrganizationGraphIfSelected(
+            String generation,
+            UUID organizationDocumentUuid,
+            List<GraphNodeResponse> nodes,
+            List<GraphEdgeResponse> edges
+    ) {
+        if (organizationDocumentUuid == null || nodes.isEmpty()) {
+            return;
+        }
+        OrganizationDocument organizationDocument = findOrganizationDocument(organizationDocumentUuid);
+        validateOrganizationIsNotGeneration(generation, organizationDocument);
+        nodes.add(GraphNodeResponse.fromOrganizationDocument(
+                organizationDocument.getUuid(),
+                organizationDocument.getTitle()
+        ));
+        List<UUID> linkedCrewDocumentUuids = crewGraphQueryRepository
+                .findAllCrewDocumentUuidsByGenerationTitleAndOrganizationDocumentUuid(
+                        generation,
+                        organizationDocumentUuid
+                );
+        addOrganizationLinkEdges(
+                organizationDocumentUuid,
+                linkedCrewDocumentUuids,
+                edges
+        );
+    }
+
+    private OrganizationDocument findOrganizationDocument(UUID organizationDocumentUuid) {
+        Optional<OrganizationDocument> organizationDocument = organizationDocumentRepository.findByUuid(
+                organizationDocumentUuid
+        );
+        return organizationDocument.orElseThrow(
+                () -> new WikiException(ErrorCode.ORGANIZATION_DOCUMENT_NOT_FOUND)
+        );
+    }
+
+    private void validateOrganizationIsNotGeneration(
+            String generation,
+            OrganizationDocument organizationDocument
+    ) {
+        if (generation.equals(organizationDocument.getTitle())) {
+            throw new WikiException(ErrorCode.VALIDATION_ERROR);
+        }
+    }
+
+    private void addOrganizationLinkEdges(
+            UUID organizationDocumentUuid,
+            List<UUID> linkedCrewDocumentUuids,
+            List<GraphEdgeResponse> edges
+    ) {
+        for (UUID crewDocumentUuid : linkedCrewDocumentUuids) {
+            edges.add(new GraphEdgeResponse(
+                    organizationDocumentUuid,
+                    crewDocumentUuid,
+                    GraphEdgeType.ORGANIZATION_LINK
+            ));
+        }
     }
 }
