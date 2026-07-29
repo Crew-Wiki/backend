@@ -18,4 +18,15 @@ public record GraphNodeResponse(
                 GraphNodeType.CREW
         );
     }
+
+    public static GraphNodeResponse fromOrganizationDocument(
+            UUID documentUuid,
+            String title
+    ) {
+        return new GraphNodeResponse(
+                documentUuid,
+                title,
+                GraphNodeType.ORGANIZATION
+        );
+    }
 }
