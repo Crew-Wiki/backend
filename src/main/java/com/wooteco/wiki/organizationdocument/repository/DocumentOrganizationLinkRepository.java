@@ -3,6 +3,8 @@ package com.wooteco.wiki.organizationdocument.repository;
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.repository.GenerationCrewOrganizationReadModel;
 import com.wooteco.wiki.document.repository.GenerationCrewQueryRepository;
+import com.wooteco.wiki.graph.repository.CrewGraphQueryRepository;
+import com.wooteco.wiki.graph.repository.CrewGraphReadModel;
 import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import java.util.List;
@@ -13,7 +15,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface DocumentOrganizationLinkRepository extends
         JpaRepository<DocumentOrganizationLink, Long>,
-        GenerationCrewQueryRepository {
+        GenerationCrewQueryRepository,
+        CrewGraphQueryRepository {
 
     Optional<DocumentOrganizationLink> findByCrewDocumentAndOrganizationDocument(
             CrewDocument crewDocument,
@@ -50,6 +53,22 @@ public interface DocumentOrganizationLinkRepository extends
             )
             """)
     List<GenerationCrewOrganizationReadModel> findAllByGenerationTitle(
+            @Param("generationTitle") String generationTitle
+    );
+
+    @Override
+    @Query("""
+            SELECT new com.wooteco.wiki.graph.repository.CrewGraphReadModel(
+                crewDocument.uuid,
+                crewDocument.title,
+                crewDocument.contents
+            )
+            FROM DocumentOrganizationLink documentOrganizationLink
+            JOIN documentOrganizationLink.crewDocument crewDocument
+            WHERE documentOrganizationLink.organizationDocument.title = :generationTitle
+            ORDER BY crewDocument.title
+            """)
+    List<CrewGraphReadModel> findAllCrewDocumentsByGenerationTitle(
             @Param("generationTitle") String generationTitle
     );
 
