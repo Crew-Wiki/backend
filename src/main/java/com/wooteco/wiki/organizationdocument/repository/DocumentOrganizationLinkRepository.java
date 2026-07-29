@@ -60,7 +60,8 @@ public interface DocumentOrganizationLinkRepository extends
     @Query("""
             SELECT new com.wooteco.wiki.graph.repository.CrewGraphReadModel(
                 crewDocument.uuid,
-                crewDocument.title
+                crewDocument.title,
+                crewDocument.contents
             )
             FROM DocumentOrganizationLink documentOrganizationLink
             JOIN documentOrganizationLink.crewDocument crewDocument

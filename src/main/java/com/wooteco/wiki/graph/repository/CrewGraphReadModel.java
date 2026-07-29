@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record CrewGraphReadModel(
         UUID documentUuid,
-        String title
+        String title,
+        String contents
 ) {
 }

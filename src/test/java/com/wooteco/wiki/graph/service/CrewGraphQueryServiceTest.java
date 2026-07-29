@@ -9,6 +9,8 @@ import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.graph.dto.CrewGraphResponse;
+import com.wooteco.wiki.graph.dto.GraphEdgeResponse;
+import com.wooteco.wiki.graph.dto.GraphEdgeType;
 import com.wooteco.wiki.graph.dto.GraphNodeResponse;
 import com.wooteco.wiki.graph.dto.GraphNodeType;
 import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
@@ -77,6 +79,87 @@ class CrewGraphQueryServiceTest {
         }
 
         @Test
+        @DisplayName("같은 기수 크루 문서의 참조를 중복 없는 무방향 간선으로 반환한다.")
+        void findByGeneration_success_byCrewDocumentReferences() {
+            // given
+            UUID firstCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID secondCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            CrewDocument firstCrew = saveCrewDocument(
+                    "가람(8기)",
+                    """
+                            [나래](https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222)
+                            https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222
+                            """,
+                    firstCrewUuid
+            );
+            CrewDocument secondCrew = saveCrewDocument(
+                    "나래(8기)",
+                    "https://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111",
+                    secondCrewUuid
+            );
+            saveLink(firstCrew, generation);
+            saveLink(secondCrew, generation);
+
+            // when
+            CrewGraphResponse response = crewGraphQueryService.findByGeneration("8기");
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(response.nodes()).hasSize(2);
+                softly.assertThat(response.edges())
+                        .containsExactly(new GraphEdgeResponse(
+                                firstCrewUuid,
+                                secondCrewUuid,
+                                GraphEdgeType.REFERENCE
+                        ));
+            });
+        }
+
+        @Test
+        @DisplayName("현재 기수의 다른 크루 문서를 가리키지 않는 참조는 간선에서 제외한다.")
+        void findByGeneration_success_byInvalidReferenceTargets() {
+            // given
+            UUID sourceCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID otherGenerationCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            UUID missingDocumentUuid = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            UUID organizationDocumentUuid = UUID.fromString("44444444-4444-4444-4444-444444444444");
+            OrganizationDocument eighthGeneration = saveOrganizationDocument("8기");
+            OrganizationDocument seventhGeneration = saveOrganizationDocument(
+                    "7기",
+                    organizationDocumentUuid
+            );
+            CrewDocument sourceCrew = saveCrewDocument(
+                    "가람(8기)",
+                    """
+                            https://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111
+                            https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222
+                            https://crew-wiki.site/wiki/33333333-3333-3333-3333-333333333333
+                            https://crew-wiki.site/wiki/44444444-4444-4444-4444-444444444444
+                            """,
+                    sourceCrewUuid
+            );
+            CrewDocument otherGenerationCrew = saveCrewDocument(
+                    "나래(7기)",
+                    "contents",
+                    otherGenerationCrewUuid
+            );
+            saveLink(sourceCrew, eighthGeneration);
+            saveLink(otherGenerationCrew, seventhGeneration);
+
+            // when
+            CrewGraphResponse response = crewGraphQueryService.findByGeneration("8기");
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(response.nodes())
+                        .extracting(GraphNodeResponse::documentUuid)
+                        .containsExactly(sourceCrewUuid);
+                softly.assertThat(response.edges()).isEmpty();
+            });
+        }
+
+        @Test
         @DisplayName("요청한 기수 조직이 없으면 빈 그래프를 반환한다.")
         void findByGeneration_success_byMissingGenerationOrganization() {
             // when
@@ -111,23 +194,38 @@ class CrewGraphQueryServiceTest {
     }
 
     private CrewDocument saveCrewDocument(String title) {
+        return saveCrewDocument(title, "contents", UUID.randomUUID());
+    }
+
+    private CrewDocument saveCrewDocument(
+            String title,
+            String contents,
+            UUID uuid
+    ) {
         CrewDocument crewDocument = CrewDocumentFixture.createCrewDocument(
                 title,
-                "contents",
+                contents,
                 "writer",
                 10L,
-                UUID.randomUUID()
+                uuid
         );
         return crewDocumentRepository.save(crewDocument);
     }
 
     private OrganizationDocument saveOrganizationDocument(String title) {
+        return saveOrganizationDocument(title, UUID.randomUUID());
+    }
+
+    private OrganizationDocument saveOrganizationDocument(
+            String title,
+            UUID uuid
+    ) {
         OrganizationDocument organizationDocument = OrganizationDocumentFixture.create(
                 title,
                 "contents",
                 "writer",
                 10L,
-                UUID.randomUUID()
+                uuid
         );
         return organizationDocumentRepository.save(organizationDocument);
     }

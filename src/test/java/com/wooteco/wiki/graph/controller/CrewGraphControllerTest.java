@@ -50,12 +50,24 @@ class CrewGraphControllerTest {
     class FindByGeneration {
 
         @Test
-        @DisplayName("성공 응답에 기수와 일치하는 크루 문서 노드를 담아 반환한다.")
+        @DisplayName("성공 응답에 기수와 일치하는 크루 문서 노드와 참조 간선을 담아 반환한다.")
         void findByGeneration_success_byMatchingGenerationTitle() {
             // given
-            CrewDocument crewDocument = saveCrewDocument("가람(8기)");
+            UUID firstCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID secondCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            CrewDocument firstCrew = saveCrewDocument(
+                    "가람(8기)",
+                    "https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222",
+                    firstCrewUuid
+            );
+            CrewDocument secondCrew = saveCrewDocument(
+                    "나래(8기)",
+                    "contents",
+                    secondCrewUuid
+            );
             OrganizationDocument generation = saveOrganizationDocument("8기");
-            saveLink(crewDocument, generation);
+            saveLink(firstCrew, generation);
+            saveLink(secondCrew, generation);
 
             // when & then
             RestAssured.given().log().all()
@@ -64,11 +76,17 @@ class CrewGraphControllerTest {
                     .get("/graph")
                     .then().log().all()
                     .statusCode(HttpStatus.OK.value())
-                    .body("data.nodes", hasSize(1))
-                    .body("data.nodes[0].documentUuid", equalTo(crewDocument.getUuid().toString()))
+                    .body("data.nodes", hasSize(2))
+                    .body("data.nodes[0].documentUuid", equalTo(firstCrewUuid.toString()))
                     .body("data.nodes[0].title", equalTo("가람(8기)"))
                     .body("data.nodes[0].type", equalTo("CREW"))
-                    .body("data.edges", hasSize(0));
+                    .body("data.nodes[1].documentUuid", equalTo(secondCrewUuid.toString()))
+                    .body("data.nodes[1].title", equalTo("나래(8기)"))
+                    .body("data.nodes[1].type", equalTo("CREW"))
+                    .body("data.edges", hasSize(1))
+                    .body("data.edges[0].sourceDocumentUuid", equalTo(firstCrewUuid.toString()))
+                    .body("data.edges[0].targetDocumentUuid", equalTo(secondCrewUuid.toString()))
+                    .body("data.edges[0].type", equalTo("REFERENCE"));
         }
 
         @Test
@@ -115,12 +133,20 @@ class CrewGraphControllerTest {
     }
 
     private CrewDocument saveCrewDocument(String title) {
+        return saveCrewDocument(title, "contents", UUID.randomUUID());
+    }
+
+    private CrewDocument saveCrewDocument(
+            String title,
+            String contents,
+            UUID uuid
+    ) {
         CrewDocument crewDocument = CrewDocumentFixture.createCrewDocument(
                 title,
-                "contents",
+                contents,
                 "writer",
                 10L,
-                UUID.randomUUID()
+                uuid
         );
         return crewDocumentRepository.save(crewDocument);
     }
