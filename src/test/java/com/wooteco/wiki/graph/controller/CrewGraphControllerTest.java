@@ -90,6 +90,90 @@ class CrewGraphControllerTest {
         }
 
         @Test
+        @DisplayName("선택한 조직 노드와 현재 기수에서 조직에 연결된 크루 간선을 반환한다.")
+        void findByGeneration_success_bySelectedOrganization() {
+            // given
+            UUID firstCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID secondCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            UUID organizationDocumentUuid = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            CrewDocument firstCrew = saveCrewDocument(
+                    "가람(8기)",
+                    "https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222",
+                    firstCrewUuid
+            );
+            CrewDocument secondCrew = saveCrewDocument(
+                    "나래(8기)",
+                    "contents",
+                    secondCrewUuid
+            );
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            OrganizationDocument backend = saveOrganizationDocument(
+                    "백엔드",
+                    organizationDocumentUuid
+            );
+            saveLink(firstCrew, generation);
+            saveLink(firstCrew, backend);
+            saveLink(secondCrew, generation);
+
+            // when & then
+            RestAssured.given().log().all()
+                    .queryParam("generation", "8기")
+                    .queryParam("organizationDocumentUuid", organizationDocumentUuid)
+                    .when()
+                    .get("/graph")
+                    .then().log().all()
+                    .statusCode(HttpStatus.OK.value())
+                    .body("data.nodes", hasSize(3))
+                    .body("data.nodes[0].documentUuid", equalTo(firstCrewUuid.toString()))
+                    .body("data.nodes[0].type", equalTo("CREW"))
+                    .body("data.nodes[1].documentUuid", equalTo(secondCrewUuid.toString()))
+                    .body("data.nodes[1].type", equalTo("CREW"))
+                    .body("data.nodes[2].documentUuid", equalTo(organizationDocumentUuid.toString()))
+                    .body("data.nodes[2].title", equalTo("백엔드"))
+                    .body("data.nodes[2].type", equalTo("ORGANIZATION"))
+                    .body("data.edges", hasSize(2))
+                    .body("data.edges[0].sourceDocumentUuid", equalTo(firstCrewUuid.toString()))
+                    .body("data.edges[0].targetDocumentUuid", equalTo(secondCrewUuid.toString()))
+                    .body("data.edges[0].type", equalTo("REFERENCE"))
+                    .body("data.edges[1].sourceDocumentUuid", equalTo(organizationDocumentUuid.toString()))
+                    .body("data.edges[1].targetDocumentUuid", equalTo(firstCrewUuid.toString()))
+                    .body("data.edges[1].type", equalTo("ORGANIZATION_LINK"));
+        }
+
+        @Test
+        @DisplayName("선택한 조직 문서가 없으면 조회 실패를 반환한다.")
+        void findByGeneration_fail_byMissingOrganizationDocument() {
+            // given
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            CrewDocument crewDocument = saveCrewDocument("가람(8기)");
+            saveLink(crewDocument, generation);
+
+            // when & then
+            RestAssured.given().log().all()
+                    .queryParam("generation", "8기")
+                    .queryParam("organizationDocumentUuid", UUID.randomUUID())
+                    .when()
+                    .get("/graph")
+                    .then().log().all()
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .body("code", equalTo("ORGANIZATION_DOCUMENT_NOT_FOUND"));
+        }
+
+        @Test
+        @DisplayName("선택한 조직 문서 UUID 형식이 잘못되면 검증 실패를 반환한다.")
+        void findByGeneration_fail_byInvalidOrganizationDocumentUuid() {
+            // when & then
+            RestAssured.given().log().all()
+                    .queryParam("generation", "8기")
+                    .queryParam("organizationDocumentUuid", "invalid-uuid")
+                    .when()
+                    .get("/graph")
+                    .then().log().all()
+                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                    .body("code", equalTo("VALIDATION_ERROR"));
+        }
+
+        @Test
         @DisplayName("입력한 조직 제목과 정확히 일치하는 기수가 없으면 빈 그래프를 반환한다.")
         void findByGeneration_success_byNoExactGenerationTitle() {
             // given
@@ -152,12 +236,19 @@ class CrewGraphControllerTest {
     }
 
     private OrganizationDocument saveOrganizationDocument(String title) {
+        return saveOrganizationDocument(title, UUID.randomUUID());
+    }
+
+    private OrganizationDocument saveOrganizationDocument(
+            String title,
+            UUID uuid
+    ) {
         OrganizationDocument organizationDocument = OrganizationDocumentFixture.create(
                 title,
                 "contents",
                 "writer",
                 10L,
-                UUID.randomUUID()
+                uuid
         );
         return organizationDocumentRepository.save(organizationDocument);
     }

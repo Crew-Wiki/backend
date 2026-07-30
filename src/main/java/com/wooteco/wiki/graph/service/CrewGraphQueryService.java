@@ -147,11 +147,14 @@ public class CrewGraphQueryService {
             List<GraphNodeResponse> nodes,
             List<GraphEdgeResponse> edges
     ) {
-        if (organizationDocumentUuid == null || nodes.isEmpty()) {
+        if (organizationDocumentUuid == null) {
             return;
         }
         OrganizationDocument organizationDocument = findOrganizationDocument(organizationDocumentUuid);
         validateOrganizationIsNotGeneration(generation, organizationDocument);
+        if (nodes.isEmpty()) {
+            return;
+        }
         nodes.add(GraphNodeResponse.fromOrganizationDocument(
                 organizationDocument.getUuid(),
                 organizationDocument.getTitle()

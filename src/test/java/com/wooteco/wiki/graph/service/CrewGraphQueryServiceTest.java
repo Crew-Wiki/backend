@@ -161,6 +161,19 @@ class CrewGraphQueryServiceTest {
         }
 
         @Test
+        @DisplayName("기수에 속한 크루가 없어도 선택한 조직 문서가 없으면 조회 예외가 발생한다.")
+        void findByGeneration_fail_byMissingOrganizationDocumentWithoutGenerationCrew() {
+            // when & then
+            assertThatThrownBy(() -> crewGraphQueryService.findByGeneration(
+                    "8기",
+                    UUID.randomUUID()
+            ))
+                    .isInstanceOf(WikiException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.ORGANIZATION_DOCUMENT_NOT_FOUND);
+        }
+
+        @Test
         @DisplayName("기수 조직을 소속 조직으로 선택하면 검증 예외가 발생한다.")
         void findByGeneration_fail_byGenerationOrganizationSelected() {
             // given
