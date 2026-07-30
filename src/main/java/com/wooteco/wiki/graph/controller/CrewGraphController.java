@@ -24,7 +24,10 @@ public class CrewGraphController {
     @GetMapping
     public ApiResponse<SuccessBody<CrewGraphResponse>> findByGeneration(
             @RequestParam String generation,
-            @RequestParam(required = false) UUID selectedOrganizationDocumentUuid
+            @RequestParam(
+                    name = "organizationDocumentUuid",
+                    required = false
+            ) UUID selectedOrganizationDocumentUuid
     ) {
         CrewGraphResponse response = crewGraphQueryService.findByGeneration(
                 generation,
