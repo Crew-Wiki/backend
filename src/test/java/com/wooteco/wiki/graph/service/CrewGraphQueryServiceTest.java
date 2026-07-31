@@ -79,6 +79,119 @@ class CrewGraphQueryServiceTest {
         }
 
         @Test
+        @DisplayName("선택한 조직 노드와 현재 기수에서 조직에 연결된 크루 간선을 추가한다.")
+        void findByGeneration_success_bySelectedOrganization() {
+            // given
+            UUID firstCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID secondCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            UUID organizationDocumentUuid = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            OrganizationDocument backend = saveOrganizationDocument(
+                    "백엔드",
+                    organizationDocumentUuid
+            );
+            CrewDocument firstCrew = saveCrewDocument(
+                    "가람(8기)",
+                    "https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222",
+                    firstCrewUuid
+            );
+            CrewDocument secondCrew = saveCrewDocument(
+                    "나래(8기)",
+                    "contents",
+                    secondCrewUuid
+            );
+            saveLink(firstCrew, generation);
+            saveLink(firstCrew, backend);
+            saveLink(secondCrew, generation);
+
+            // when
+            CrewGraphResponse response = crewGraphQueryService.findByGeneration(
+                    "8기",
+                    organizationDocumentUuid
+            );
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(response.nodes())
+                        .extracting(GraphNodeResponse::documentUuid)
+                        .containsExactly(
+                                firstCrewUuid,
+                                secondCrewUuid,
+                                organizationDocumentUuid
+                        );
+                softly.assertThat(response.nodes())
+                        .extracting(GraphNodeResponse::type)
+                        .containsExactly(
+                                GraphNodeType.CREW,
+                                GraphNodeType.CREW,
+                                GraphNodeType.ORGANIZATION
+                        );
+                softly.assertThat(response.edges())
+                        .containsExactly(
+                                new GraphEdgeResponse(
+                                        firstCrewUuid,
+                                        secondCrewUuid,
+                                        GraphEdgeType.REFERENCE
+                                ),
+                                new GraphEdgeResponse(
+                                        organizationDocumentUuid,
+                                        firstCrewUuid,
+                                        GraphEdgeType.ORGANIZATION_LINK
+                                )
+                        );
+            });
+        }
+
+        @Test
+        @DisplayName("선택한 조직 문서가 없으면 조회 예외가 발생한다.")
+        void findByGeneration_fail_byMissingOrganizationDocument() {
+            // given
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            CrewDocument crewDocument = saveCrewDocument("가람(8기)");
+            saveLink(crewDocument, generation);
+
+            // when & then
+            assertThatThrownBy(() -> crewGraphQueryService.findByGeneration(
+                    "8기",
+                    UUID.randomUUID()
+            ))
+                    .isInstanceOf(WikiException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.ORGANIZATION_DOCUMENT_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("기수에 속한 크루가 없어도 선택한 조직 문서가 없으면 조회 예외가 발생한다.")
+        void findByGeneration_fail_byMissingOrganizationDocumentWithoutGenerationCrew() {
+            // when & then
+            assertThatThrownBy(() -> crewGraphQueryService.findByGeneration(
+                    "8기",
+                    UUID.randomUUID()
+            ))
+                    .isInstanceOf(WikiException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.ORGANIZATION_DOCUMENT_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("기수 조직을 소속 조직으로 선택하면 검증 예외가 발생한다.")
+        void findByGeneration_fail_byGenerationOrganizationSelected() {
+            // given
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            CrewDocument crewDocument = saveCrewDocument("가람(8기)");
+            saveLink(crewDocument, generation);
+
+            // when & then
+            assertThatThrownBy(() -> crewGraphQueryService.findByGeneration(
+                    "8기",
+                    generation.getUuid()
+            ))
+                    .isInstanceOf(WikiException.class)
+                    .extracting("errorCode")
+                    .isEqualTo(ErrorCode.VALIDATION_ERROR);
+        }
+
+        @Test
         @DisplayName("같은 기수 크루 문서의 참조를 중복 없는 무방향 간선으로 반환한다.")
         void findByGeneration_success_byCrewDocumentReferences() {
             // given

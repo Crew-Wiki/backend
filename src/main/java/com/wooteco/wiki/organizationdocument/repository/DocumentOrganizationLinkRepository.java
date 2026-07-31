@@ -9,6 +9,7 @@ import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -70,6 +71,23 @@ public interface DocumentOrganizationLinkRepository extends
             """)
     List<CrewGraphReadModel> findAllCrewDocumentsByGenerationTitle(
             @Param("generationTitle") String generationTitle
+    );
+
+    @Override
+    @Query("""
+            SELECT selectedOrganizationLink.crewDocument.uuid
+            FROM DocumentOrganizationLink selectedOrganizationLink
+            WHERE selectedOrganizationLink.organizationDocument.uuid = :organizationDocumentUuid
+            AND selectedOrganizationLink.crewDocument IN (
+                SELECT generationLink.crewDocument
+                FROM DocumentOrganizationLink generationLink
+                WHERE generationLink.organizationDocument.title = :generationTitle
+            )
+            ORDER BY selectedOrganizationLink.crewDocument.uuid
+            """)
+    List<UUID> findAllCrewDocumentUuidsByGenerationTitleAndOrganizationDocumentUuid(
+            @Param("generationTitle") String generationTitle,
+            @Param("organizationDocumentUuid") UUID organizationDocumentUuid
     );
 
     void deleteAllByCrewDocument(CrewDocument crewDocument);
