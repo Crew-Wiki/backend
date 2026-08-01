@@ -20,7 +20,10 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthService authService;
 
-    public LoginMemberArgumentResolver(JwtTokenProvider jwtTokenProvider, AuthService authService) {
+    public LoginMemberArgumentResolver(
+            JwtTokenProvider jwtTokenProvider,
+            AuthService authService
+    ) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.authService = authService;
     }
@@ -31,10 +34,12 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
     }
 
     @Override
-    public Admin resolveArgument(MethodParameter methodParameter,
-                                ModelAndViewContainer mavContainer,
-                                NativeWebRequest nativeWebRequest,
-                                WebDataBinderFactory binderFactory) {
+    public Admin resolveArgument(
+            MethodParameter methodParameter,
+            ModelAndViewContainer mavContainer,
+            NativeWebRequest nativeWebRequest,
+            WebDataBinderFactory binderFactory
+    ) {
         HttpServletRequest request = (HttpServletRequest) nativeWebRequest.getNativeRequest();
 
         String token = extractTokenFromCookie(request);

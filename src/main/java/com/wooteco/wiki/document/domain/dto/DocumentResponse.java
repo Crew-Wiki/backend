@@ -7,21 +7,21 @@ import java.util.List;
 import java.util.UUID;
 
 public record DocumentResponse(
-    Long documentId,
-    UUID documentUUID,
-    String title,
-    String contents,
-    String writer,
-    LocalDateTime generateTime,
-    Integer viewCount,
-    Long latestVersion,
-    List<OrganizationDocumentResponse> organizationDocumentResponses
+        Long documentId,
+        UUID documentUUID,
+        String title,
+        String contents,
+        String writer,
+        LocalDateTime generateTime,
+        Integer viewCount,
+        Long latestVersion,
+        List<OrganizationDocumentResponse> organizationDocumentResponses
 ) {
 
     public static DocumentResponse toDocumentResponse(
-        CrewDocument crewDocument,
-        Long latestVersion,
-        List<OrganizationDocumentResponse> organizationDocumentResponses
+            CrewDocument crewDocument,
+            Long latestVersion,
+            List<OrganizationDocumentResponse> organizationDocumentResponses
     ) {
         return new DocumentResponse(
             crewDocument.getId(),
@@ -36,4 +36,3 @@ public record DocumentResponse(
         );
     }
 }
-

@@ -81,7 +81,10 @@ public class CrewDocumentService {
     }
 
     @Transactional
-    public DocumentResponse update(UUID uuid, DocumentUpdateRequest request) {
+    public DocumentResponse update(
+            UUID uuid,
+            DocumentUpdateRequest request
+    ) {
         CrewDocument crewDocument = crewDocumentRepository.findByUuid(uuid)
                 .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
 

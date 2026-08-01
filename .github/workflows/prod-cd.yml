@@ -112,7 +112,7 @@ jobs:
           PROD_DB_URL=${{ secrets.PROD_DB_URL }}
           PROD_DB_USERNAME=${{ secrets.PROD_DB_USERNAME }}
           PROD_DB_PASSWORD=${{ secrets.PROD_DB_PASSWORD }}
-          CORS_ALLOWED_ORIGINS=${{ secrets.PROD_CORS_ALLOWED_ORIGINS || 'https://crew-wiki.site,https://api.crew-wiki.site' }}
+          CORS_ALLOWED_ORIGINS=${{ secrets.PROD_CORS_ALLOWED_ORIGINS || 'https://crew-wiki.site,https://www.crew-wiki.site,https://api.crew-wiki.site' }}
           SWAGGER_SERVER_URL=${{ secrets.PROD_SWAGGER_SERVER_URL || 'https://api.crew-wiki.site' }}
           AWS_CREDENTIALS_ACCESS_KEY=${{ secrets.AWS_CREDENTIALS_ACCESS_KEY }}
           AWS_CREDENTIALS_SECRET_KEY=${{ secrets.AWS_CREDENTIALS_SECRET_KEY }}

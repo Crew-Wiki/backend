@@ -21,8 +21,11 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 public class HttpLogger extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
         String requestId = UUID.randomUUID().toString();
         request.setAttribute("requestId", requestId);
         ContentCachingRequestWrapper wrappingRequest = new ContentCachingRequestWrapper(request);
@@ -59,7 +62,10 @@ public class HttpLogger extends OncePerRequestFilter {
         }
     }
 
-    private List<String> makeResponseHeaderLogs(String requestId, HttpServletResponse response) {
+    private List<String> makeResponseHeaderLogs(
+            String requestId,
+            HttpServletResponse response
+    ) {
         List<String> responseHeaderLogs = new ArrayList<>();
         responseHeaderLogs.add(String.format("%s = %s %s %s", "RequestId", requestId, "<<Response>>", "Headers"));
         for (String s : response.getHeaderNames()) {
@@ -69,7 +75,11 @@ public class HttpLogger extends OncePerRequestFilter {
         return responseHeaderLogs;
     }
 
-    private void printResponseLogs(String requestId, List<String> responseHeaderLogs, String responseBodyLog) {
+    private void printResponseLogs(
+            String requestId,
+            List<String> responseHeaderLogs,
+            String responseBodyLog
+    ) {
         for (String s : responseHeaderLogs) {
             log.info(s);
         }

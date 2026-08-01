@@ -54,8 +54,13 @@ public class OrganizationEvent {
             foreignKey = @ForeignKey(name = "fk_event_orgdoc"))
     private OrganizationDocument organizationDocument;
 
-    public static OrganizationEvent create(String title, String contents, String writer, LocalDate occurredAt,
-                                           OrganizationDocument organizationDocument) {
+    public static OrganizationEvent create(
+            String title,
+            String contents,
+            String writer,
+            LocalDate occurredAt,
+            OrganizationDocument organizationDocument
+    ) {
         return OrganizationEvent.builder()
                 .uuid(UUID.randomUUID())
                 .title(title.trim())
@@ -66,7 +71,12 @@ public class OrganizationEvent {
                 .build();
     }
 
-    public void update(String title, String contents, String writer, LocalDate occurredAt) {
+    public void update(
+            String title,
+            String contents,
+            String writer,
+            LocalDate occurredAt
+    ) {
         this.title = title.trim();
         this.contents = getContents(contents);
         this.writer = writer.trim();

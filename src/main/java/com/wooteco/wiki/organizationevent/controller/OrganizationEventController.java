@@ -40,7 +40,8 @@ public class OrganizationEventController {
     @PutMapping("/{organizationEventUuid}")
     public ApiResponse<SuccessBody<OrganizationEventUpdateResponse>> put(
             @PathVariable UUID organizationEventUuid,
-            @RequestBody @Valid OrganizationEventUpdateRequest organizationEventUpdateRequest) {
+            @RequestBody @Valid OrganizationEventUpdateRequest organizationEventUpdateRequest
+    ) {
         OrganizationEventUpdateResponse response = organizationEventService.put(organizationEventUuid,
                 organizationEventUpdateRequest);
         return ApiResponseGenerator.success(response);

@@ -1,6 +1,7 @@
 package com.wooteco.wiki.document.repository;
 
 import com.wooteco.wiki.document.domain.Document;
+import com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,6 +17,18 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     Boolean existsByTitle(String title);
 
     List<Document> findAllByTitleStartingWithOrderByTitle(String keyWord);
+
+    @Query("""
+        SELECT new com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse(
+            d.title,
+            d.uuid,
+            d.dtype,
+            d.generateTime
+        )
+        FROM Document d
+        ORDER BY d.title ASC
+        """)
+    List<DocumentTitleListResponse> findAllTitles();
 
     Optional<Document> findByUuid(UUID uuid);
 

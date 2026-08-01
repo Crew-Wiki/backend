@@ -2,13 +2,14 @@ name: dev-cd.yml
 
 on:
   push:
-    branches: ["develop"]
+    branches: [ "develop" ]
     paths:
       - "**"
+  workflow_dispatch:
 
 jobs:
   build-and-push:
-    runs-on: [self-hosted, crew-wiki-dev]
+    runs-on: [ self-hosted, crew-wiki-dev ]
     env:
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki
     steps:
@@ -50,7 +51,7 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: [self-hosted, crew-wiki-dev]
+    runs-on: [ self-hosted, crew-wiki-dev ]
     env:
       IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/crew-wiki:dev-latest
     steps:

@@ -3,6 +3,8 @@ package com.wooteco.wiki.document.domain;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -47,8 +49,17 @@ public abstract class Document {
     @Column(name = "view_count", nullable = false, columnDefinition = "INT DEFAULT 0 NOT NULL")
     protected Integer viewCount = 0;
 
-    public Document(final String title, final String contents, final String writer,
-                    final Long documentBytes, final UUID uuid) {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dtype", insertable = false, updatable = false)
+    private DocumentType dtype;
+
+    public Document(
+            final String title,
+            final String contents,
+            final String writer,
+            final Long documentBytes,
+            final UUID uuid
+    ) {
         this.title = title;
         this.contents = contents;
         this.writer = writer;

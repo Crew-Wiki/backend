@@ -13,8 +13,13 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("ORGANIZATION")
 public class OrganizationDocument extends Document {
 
-    public OrganizationDocument(final String title, final String contents, final String writer,
-                                final Long documentBytes, final UUID uuid) {
+    public OrganizationDocument(
+            final String title,
+            final String contents,
+            final String writer,
+            final Long documentBytes,
+            final UUID uuid
+    ) {
         super(title, contents, writer, documentBytes, uuid);
     }
 

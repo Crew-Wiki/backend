@@ -31,8 +31,10 @@ public class DocumentServiceJava {
         return toOrganizationDocumentTitleAndUuidResponses(organizationDocumentResponsesByDocument);
     }
 
-    public void addOrganizationDocument(UUID documentUuid,
-                                        DocumentOrganizationMappingAddRequest documentOrganizationMappingAddRequest) {
+    public void addOrganizationDocument(
+            UUID documentUuid,
+            DocumentOrganizationMappingAddRequest documentOrganizationMappingAddRequest
+    ) {
         CrewDocument crewDocument = getCrewDocument(documentUuid);
         OrganizationDocument organizationDocument = organizationDocumentRepository.save(
                 documentOrganizationMappingAddRequest.toOrganizationDocument());
@@ -40,7 +42,10 @@ public class DocumentServiceJava {
         documentOrganizationLinkService.link(crewDocument, organizationDocument);
     }
 
-    public void deleteOrganizationDocument(UUID documentUuid, UUID organizationDocumentUuid) {
+    public void deleteOrganizationDocument(
+            UUID documentUuid,
+            UUID organizationDocumentUuid
+    ) {
         CrewDocument crewDocument = getCrewDocument(documentUuid);
         OrganizationDocument organizationDocument = getOrganizationDocument(organizationDocumentUuid);
 

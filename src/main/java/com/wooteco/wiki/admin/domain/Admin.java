@@ -21,7 +21,10 @@ public class Admin {
     protected Admin() {
     }
 
-    public Admin(String loginId, String password) {
+    public Admin(
+            String loginId,
+            String password
+    ) {
         this.loginId = loginId;
         this.password = password;
     }
