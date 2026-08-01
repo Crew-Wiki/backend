@@ -1,0 +1,67 @@
+name: prod-diagnostics.yml
+
+on:
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: [self-hosted, crew-wiki-prod]
+    steps:
+      - name: Inspect production container (read-only)
+        shell: bash
+        run: |
+          set -uo pipefail
+          CONTAINER_NAME=crew-wiki
+
+          echo "=== container state ==="
+          docker ps -a \
+            --filter "name=^/${CONTAINER_NAME}$" \
+            --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
+
+          if ! docker inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+            echo "container_missing=true"
+            exit 1
+          fi
+
+          docker inspect "$CONTAINER_NAME" \
+            --format 'running={{.State.Running}} status={{.State.Status}} exit_code={{.State.ExitCode}} restart_count={{.RestartCount}} error={{json .State.Error}}'
+
+          echo "=== non-sensitive database URL metadata ==="
+          ENV_FILE=/home/ubuntu/crew-wiki/.env
+          DB_URL="$(sed -n 's/^PROD_DB_URL=//p' "$ENV_FILE")"
+          DB_SCHEMA="$(printf '%s' "$DB_URL" | sed -E 's#^jdbc:mysql://[^/]+/([^?]+).*#\1#')"
+          DB_ENCODING="$(printf '%s' "$DB_URL" | sed -nE 's#.*[?&]characterEncoding=([^&]+).*#\1#p')"
+          printf 'db_schema=%s\ncharacter_encoding=%s\n' "$DB_SCHEMA" "$DB_ENCODING"
+
+          echo "=== visible non-system database schemas (read-only) ==="
+          DB_HOST="$(printf '%s' "$DB_URL" | sed -E 's#^jdbc:mysql://([^/:]+).*#\1#')"
+          DB_USER="$(sed -n 's/^PROD_DB_USERNAME=//p' "$ENV_FILE")"
+          DB_PASSWORD="$(sed -n 's/^PROD_DB_PASSWORD=//p' "$ENV_FILE")"
+          docker run --rm --network host \
+            -e MYSQL_PWD="$DB_PASSWORD" \
+            mysql:8.0 \
+            mysql \
+              --host="$DB_HOST" \
+              --port=3306 \
+              --user="$DB_USER" \
+              --ssl-mode=REQUIRED \
+              --batch \
+              --skip-column-names \
+              --execute="SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys') ORDER BY SCHEMA_NAME;"
+          unset DB_HOST DB_USER DB_PASSWORD
+          unset DB_URL
+
+          echo "=== localhost API ==="
+          curl -sS \
+            --max-time 10 \
+            -o /tmp/crew-wiki-health-body \
+            -w 'http_status=%{http_code}\n' \
+            'http://127.0.0.1:8080/document?page=0&size=1' || true
+
+          echo "=== application logs (redacted) ==="
+          docker logs --tail 200 "$CONTAINER_NAME" 2>&1 \
+            | sed -E \
+                -e 's#jdbc:mysql://[^ /?]+#jdbc:mysql://[redacted-host]#g' \
+                -e 's#(password|passwd|pwd)([=: ]+)[^ ,;]+#\1\2[redacted]#Ig'
+
+          test "$(docker inspect "$CONTAINER_NAME" --format '{{.State.Running}}')" = "true"
