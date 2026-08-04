@@ -10,21 +10,15 @@ import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
 import com.wooteco.wiki.global.auth.JwtTokenProvider;
 import com.wooteco.wiki.admin.repository.AdminRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class AuthService {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AdminRepository adminRepository;
-
-    public AuthService(
-            JwtTokenProvider jwtTokenProvider,
-            AdminRepository adminRepository
-    ) {
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.adminRepository = adminRepository;
-    }
 
     public TokenResponse login(LoginRequest loginRequest) {
         Admin admin = adminRepository.findOneByLoginIdAndPassword(loginRequest.loginId(), loginRequest.password())
