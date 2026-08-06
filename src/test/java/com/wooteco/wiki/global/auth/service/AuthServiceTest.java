@@ -46,7 +46,6 @@ class AuthServiceTest {
 
             // then
             assertThat(tokenResponse).isNotNull();
-            System.out.println(tokenResponse);
         }
     }
 
@@ -66,7 +65,6 @@ class AuthServiceTest {
 
             // then
             assertThat(tokenResponse).isNotNull();
-            System.out.println(tokenResponse);
         }
 
         @DisplayName("존재하지 않는 어드민 정보로 요청했을 때 예외 발생한다. : WikiException.ADMIN_NOT_FOUND")
