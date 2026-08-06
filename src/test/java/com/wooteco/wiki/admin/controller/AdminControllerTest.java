@@ -28,11 +28,11 @@ class AdminControllerTest {
 
     @Nested
     @DisplayName("adminController")
-    class DeleteDocumentByDocumentId {
+    class DeleteDocumentByDocumentUuid {
 
         @DisplayName("/admin/** 은 token이 없을 시 예외 발생")
         @Test
-        void deleteDocumentByDocumentId_fail_byMissingToken() {
+        void deleteDocumentByDocumentUuid_fail_byMissingToken() {
             // then
             RestAssured
                     .given().log().all()
