@@ -199,16 +199,36 @@ class CrewDocumentReferenceExtractorTest {
         }
 
         @Test
+        @DisplayName("자기 자신이나 존재하지 않는 문서를 가리켜도 문법이 유효하면 UUID를 추출한다.")
+        void extract_success_bySyntacticallyValidTargets() {
+            // given
+            String contents = """
+                    [자기 자신](https://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111)
+                    [저장되지 않은 문서](https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222)
+                    """;
+
+            // when
+            List<UUID> references = crewDocumentReferenceExtractor.extract(contents);
+
+            // then
+            assertThat(references).containsExactly(FIRST_DOCUMENT_UUID, SECOND_DOCUMENT_UUID);
+        }
+
+        @Test
         @DisplayName("본문이 없거나 공백이면 빈 목록을 반환한다.")
         void extract_success_byEmptyContents() {
             // when
             List<UUID> nullContentsReferences = crewDocumentReferenceExtractor.extract(null);
+            List<UUID> emptyContentsReferences = crewDocumentReferenceExtractor.extract("");
             List<UUID> blankContentsReferences = crewDocumentReferenceExtractor.extract(" ");
+            List<UUID> whitespaceContentsReferences = crewDocumentReferenceExtractor.extract("\n\t");
 
             // then
             assertSoftly(softly -> {
                 softly.assertThat(nullContentsReferences).isEmpty();
+                softly.assertThat(emptyContentsReferences).isEmpty();
                 softly.assertThat(blankContentsReferences).isEmpty();
+                softly.assertThat(whitespaceContentsReferences).isEmpty();
             });
         }
     }
