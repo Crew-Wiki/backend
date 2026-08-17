@@ -14,6 +14,8 @@ class CrewDocumentReferenceExtractorTest {
     private static final UUID FIRST_DOCUMENT_UUID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID SECOND_DOCUMENT_UUID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID UPPERCASE_DOCUMENT_UUID = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+    private static final String FIRST_DOCUMENT_URL =
+            "https://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111";
 
     private final CrewDocumentReferenceExtractor crewDocumentReferenceExtractor =
             new CrewDocumentReferenceExtractor();
@@ -107,6 +109,93 @@ class CrewDocumentReferenceExtractorTest {
 
             // then
             assertThat(references).isEmpty();
+        }
+
+        @Test
+        @DisplayName("URL 뒤에 괄호나 문장부호가 이어져도 UUID를 추출한다.")
+        void extract_success_byAllowedPunctuationBoundaries() {
+            // given
+            String closingParenthesis = "참고(" + FIRST_DOCUMENT_URL + ")";
+            String comma = FIRST_DOCUMENT_URL + ", 그리고 다른 문서";
+            String colon = FIRST_DOCUMENT_URL + ": 첫 번째 크루";
+            String koreanPeriod = FIRST_DOCUMENT_URL + "。";
+
+            // when & then
+            assertSoftly(softly -> {
+                softly.assertThat(crewDocumentReferenceExtractor.extract(closingParenthesis))
+                        .containsExactly(FIRST_DOCUMENT_UUID);
+                softly.assertThat(crewDocumentReferenceExtractor.extract(comma))
+                        .containsExactly(FIRST_DOCUMENT_UUID);
+                softly.assertThat(crewDocumentReferenceExtractor.extract(colon))
+                        .containsExactly(FIRST_DOCUMENT_UUID);
+                softly.assertThat(crewDocumentReferenceExtractor.extract(koreanPeriod))
+                        .containsExactly(FIRST_DOCUMENT_UUID);
+            });
+        }
+
+        @Test
+        @DisplayName("UUID 뒤에 query, fragment, 하위 경로가 붙어도 현재는 UUID를 추출한다.")
+        void extract_success_byQueryFragmentAndChildPath() {
+            // given
+            String query = FIRST_DOCUMENT_URL + "?tab=1";
+            String fragment = FIRST_DOCUMENT_URL + "#section";
+            String childPath = FIRST_DOCUMENT_URL + "/child";
+
+            // when & then
+            assertSoftly(softly -> {
+                softly.assertThat(crewDocumentReferenceExtractor.extract(query))
+                        .containsExactly(FIRST_DOCUMENT_UUID);
+                softly.assertThat(crewDocumentReferenceExtractor.extract(fragment))
+                        .containsExactly(FIRST_DOCUMENT_UUID);
+                softly.assertThat(crewDocumentReferenceExtractor.extract(childPath))
+                        .containsExactly(FIRST_DOCUMENT_UUID);
+            });
+        }
+
+        @Test
+        @DisplayName("이미지 주소 앞에 공백이 있으면 현재는 이미지로 판별하지 못해 UUID를 추출한다.")
+        void extract_success_byWhitespaceBeforeMarkdownImageUrl() {
+            // given
+            String contents = "![이미지]( " + FIRST_DOCUMENT_URL + ")";
+
+            // when
+            List<UUID> references = crewDocumentReferenceExtractor.extract(contents);
+
+            // then
+            assertThat(references).containsExactly(FIRST_DOCUMENT_UUID);
+        }
+
+        @Test
+        @DisplayName("UUID 바로 뒤에 마침표가 붙으면 현재는 UUID를 추출하지 못한다.")
+        void extract_success_byPeriodSuffix() {
+            // given
+            String contents = FIRST_DOCUMENT_URL + ".";
+
+            // when
+            List<UUID> references = crewDocumentReferenceExtractor.extract(contents);
+
+            // then
+            assertThat(references).isEmpty();
+        }
+
+        @Test
+        @DisplayName("UUID 뒤에 문자, 숫자, underscore, tilde, hyphen이 이어지면 제외한다.")
+        void extract_success_byInvalidTrailingCharacters() {
+            // given
+            String letter = FIRST_DOCUMENT_URL + "a";
+            String digit = FIRST_DOCUMENT_URL + "1";
+            String underscore = FIRST_DOCUMENT_URL + "_";
+            String tilde = FIRST_DOCUMENT_URL + "~";
+            String hyphen = FIRST_DOCUMENT_URL + "-";
+
+            // when & then
+            assertSoftly(softly -> {
+                softly.assertThat(crewDocumentReferenceExtractor.extract(letter)).isEmpty();
+                softly.assertThat(crewDocumentReferenceExtractor.extract(digit)).isEmpty();
+                softly.assertThat(crewDocumentReferenceExtractor.extract(underscore)).isEmpty();
+                softly.assertThat(crewDocumentReferenceExtractor.extract(tilde)).isEmpty();
+                softly.assertThat(crewDocumentReferenceExtractor.extract(hyphen)).isEmpty();
+            });
         }
 
         @Test
