@@ -13,6 +13,7 @@ class CrewDocumentReferenceExtractorTest {
 
     private static final UUID FIRST_DOCUMENT_UUID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID SECOND_DOCUMENT_UUID = UUID.fromString("22222222-2222-2222-2222-222222222222");
+    private static final UUID UPPERCASE_DOCUMENT_UUID = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
 
     private final CrewDocumentReferenceExtractor crewDocumentReferenceExtractor =
             new CrewDocumentReferenceExtractor();
@@ -51,6 +52,36 @@ class CrewDocumentReferenceExtractorTest {
 
             // then
             assertThat(references).containsExactly(FIRST_DOCUMENT_UUID);
+        }
+
+        @Test
+        @DisplayName("같은 문서를 다시 참조해도 첫 등장 순서를 유지한다.")
+        void extract_success_byFirstAppearanceOrder() {
+            // given
+            String contents = """
+                    https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222
+                    https://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111
+                    [다시 두 번째 크루](https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222)
+                    """;
+
+            // when
+            List<UUID> references = crewDocumentReferenceExtractor.extract(contents);
+
+            // then
+            assertThat(references).containsExactly(SECOND_DOCUMENT_UUID, FIRST_DOCUMENT_UUID);
+        }
+
+        @Test
+        @DisplayName("UUID를 대문자로 작성해도 같은 UUID를 추출한다.")
+        void extract_success_byUppercaseUuid() {
+            // given
+            String contents = "https://crew-wiki.site/wiki/AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
+
+            // when
+            List<UUID> references = crewDocumentReferenceExtractor.extract(contents);
+
+            // then
+            assertThat(references).containsExactly(UPPERCASE_DOCUMENT_UUID);
         }
 
         @Test
