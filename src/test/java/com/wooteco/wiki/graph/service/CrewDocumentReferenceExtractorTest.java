@@ -112,17 +112,44 @@ class CrewDocumentReferenceExtractorTest {
         }
 
         @Test
+        @DisplayName("정식 주소와 호스트가 같아도 http scheme이면 제외한다.")
+        void extract_success_byHttpScheme() {
+            // given
+            String contents = "http://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111";
+
+            // when
+            List<UUID> references = crewDocumentReferenceExtractor.extract(contents);
+
+            // then
+            assertThat(references).isEmpty();
+        }
+
+        @Test
+        @DisplayName("URL 앞 문자가 URL 구성 문자면 중간 substring으로 인식하지 않는다.")
+        void extract_success_byUrlCharacterBeforeLink() {
+            // given
+            String queryParameterValue = "https://example.com/redirect?url=" + FIRST_DOCUMENT_URL;
+            String colonPrefix = "참고:" + FIRST_DOCUMENT_URL;
+
+            // when & then
+            assertSoftly(softly -> {
+                softly.assertThat(crewDocumentReferenceExtractor.extract(queryParameterValue)).isEmpty();
+                softly.assertThat(crewDocumentReferenceExtractor.extract(colonPrefix)).isEmpty();
+            });
+        }
+
+        @Test
         @DisplayName("URL 뒤에 괄호나 문장부호가 이어져도 UUID를 추출한다.")
         void extract_success_byAllowedPunctuationBoundaries() {
             // given
-            String closingParenthesis = "참고(" + FIRST_DOCUMENT_URL + ")";
+            String surroundingParentheses = "참고(" + FIRST_DOCUMENT_URL + ")";
             String comma = FIRST_DOCUMENT_URL + ", 그리고 다른 문서";
             String colon = FIRST_DOCUMENT_URL + ": 첫 번째 크루";
             String koreanPeriod = FIRST_DOCUMENT_URL + "。";
 
             // when & then
             assertSoftly(softly -> {
-                softly.assertThat(crewDocumentReferenceExtractor.extract(closingParenthesis))
+                softly.assertThat(crewDocumentReferenceExtractor.extract(surroundingParentheses))
                         .containsExactly(FIRST_DOCUMENT_UUID);
                 softly.assertThat(crewDocumentReferenceExtractor.extract(comma))
                         .containsExactly(FIRST_DOCUMENT_UUID);
@@ -163,6 +190,19 @@ class CrewDocumentReferenceExtractorTest {
 
             // then
             assertThat(references).containsExactly(FIRST_DOCUMENT_UUID);
+        }
+
+        @Test
+        @DisplayName("이미지를 감싼 링크는 현재는 이미지로 판별해 UUID를 추출하지 못한다.")
+        void extract_success_byImageWrappedLink() {
+            // given
+            String contents = "[![이미지](https://cdn.example.com/thumbnail.png)](" + FIRST_DOCUMENT_URL + ")";
+
+            // when
+            List<UUID> references = crewDocumentReferenceExtractor.extract(contents);
+
+            // then
+            assertThat(references).isEmpty();
         }
 
         @Test
