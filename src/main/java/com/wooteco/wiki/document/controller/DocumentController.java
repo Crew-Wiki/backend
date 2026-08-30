@@ -1,7 +1,6 @@
 package com.wooteco.wiki.document.controller;
 
 import com.wooteco.wiki.admin.service.CrewDocumentService;
-import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.domain.dto.CrewDocumentCreateRequest;
 import com.wooteco.wiki.document.domain.dto.DocumentListResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentResponse;
@@ -66,8 +65,7 @@ public class DocumentController {
     @Operation(summary = "위키 글 전체 조회", description = "페이지네이션을 통해 모든 위키 글을 조회합니다.")
     @GetMapping("")
     public ApiResponse<SuccessBody<PagedResponse<List<DocumentListResponse>>>> findAll(@ModelAttribute PagingRequest pageRequestDto) {
-        Page<Document> pageResponses = documentService.findAll(pageRequestDto);
-        Page<DocumentListResponse> responses = pageResponses.map(DocumentListResponse::from);
+        Page<DocumentListResponse> responses = documentService.findAll(pageRequestDto);
         return ApiResponseGenerator.success(convertToResponse(responses));
     }
 

@@ -10,6 +10,7 @@ import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.domain.DocumentType;
 import com.wooteco.wiki.document.domain.dto.CrewDocumentCreateRequest;
+import com.wooteco.wiki.document.domain.dto.DocumentListResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentTitleListResponse;
 import com.wooteco.wiki.document.domain.dto.DocumentUuidResponse;
@@ -25,7 +26,6 @@ import java.util.Objects;
 import java.util.Map;
 import java.util.UUID;
 import org.assertj.core.api.SoftAssertions;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -137,8 +137,20 @@ class DocumentServiceTest {
                 crewDocumentService.create(documentRequestDto);
             }
 
+            Page<DocumentListResponse> responses = documentService.findAll(pageRequestDto);
+
             // then
-            assertThat(documentService.findAll(pageRequestDto)).hasSize(requestDtos.size());
+            assertSoftly(softly -> {
+                softly.assertThat(responses).hasSize(requestDtos.size());
+                softly.assertThat(responses)
+                        .extracting(DocumentListResponse::title)
+                        .containsExactlyInAnyOrder("title1", "title2");
+                softly.assertThat(responses)
+                        .extracting(DocumentListResponse::uuid)
+                        .containsExactlyInAnyOrderElementsOf(requestDtos.stream()
+                                .map(CrewDocumentCreateRequest::uuid)
+                                .toList());
+            });
         }
 
         @DisplayName("저장된 문서가 존재하지 않을 때 요청 시 예외 없이 빈 리스트를 반환한다")
@@ -162,7 +174,7 @@ class DocumentServiceTest {
             }
 
             // when
-            Page<@NotNull Document> documentPages = documentService.findAll(pageRequestDto);
+            Page<DocumentListResponse> documentPages = documentService.findAll(pageRequestDto);
 
             // then
             SoftAssertions softAssertions = new SoftAssertions();
@@ -187,7 +199,7 @@ class DocumentServiceTest {
             }
 
             // when
-            Page<@NotNull Document> documentPages = documentService.findAll(pageRequestDto);
+            Page<DocumentListResponse> documentPages = documentService.findAll(pageRequestDto);
 
             // then
             SoftAssertions softAssertions = new SoftAssertions();
