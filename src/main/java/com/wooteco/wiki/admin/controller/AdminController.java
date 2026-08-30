@@ -23,7 +23,7 @@ public class AdminController {
 
     @Operation(summary = "문서 삭제", description = "문서 Uuid로 문서를 삭제합니다.")
     @DeleteMapping("/documents/{documentUuid}")
-    public ApiResponse<ApiResponse.SuccessBody<Void>> deleteDocumentByDocumentId(@PathVariable UUID documentUuid) {
+    public ApiResponse<ApiResponse.SuccessBody<Void>> deleteDocumentByDocumentUuid(@PathVariable UUID documentUuid) {
         adminService.deleteDocumentByDocumentUuid(documentUuid);
         return ApiResponseGenerator.success(HttpStatus.NO_CONTENT);
     }

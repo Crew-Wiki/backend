@@ -26,7 +26,7 @@ public record OrganizationDocumentResponse(
         );
     }
 
-    public OrganizationDocumentSearchResponse toOrganizationDocumentTitleAndUuidResponse() {
+    public OrganizationDocumentSearchResponse toOrganizationDocumentSearchResponse() {
         return new OrganizationDocumentSearchResponse(
                 organizationDocumentUuid,
                 title

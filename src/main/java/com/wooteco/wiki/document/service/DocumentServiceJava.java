@@ -28,7 +28,7 @@ public class DocumentServiceJava {
         List<OrganizationDocumentResponse> organizationDocumentResponsesByDocument = documentOrganizationLinkService.findOrganizationDocumentResponsesByDocument(
                 crewDocument);
 
-        return toOrganizationDocumentTitleAndUuidResponses(organizationDocumentResponsesByDocument);
+        return toOrganizationDocumentSearchResponses(organizationDocumentResponsesByDocument);
     }
 
     public void addOrganizationDocument(
@@ -52,10 +52,10 @@ public class DocumentServiceJava {
         documentOrganizationLinkService.unlink(crewDocument, organizationDocument);
     }
 
-    private List<OrganizationDocumentSearchResponse> toOrganizationDocumentTitleAndUuidResponses(
+    private List<OrganizationDocumentSearchResponse> toOrganizationDocumentSearchResponses(
             List<OrganizationDocumentResponse> organizationDocumentResponsesByDocument) {
         return organizationDocumentResponsesByDocument.stream()
-                .map(OrganizationDocumentResponse::toOrganizationDocumentTitleAndUuidResponse)
+                .map(OrganizationDocumentResponse::toOrganizationDocumentSearchResponse)
                 .toList();
     }
 
