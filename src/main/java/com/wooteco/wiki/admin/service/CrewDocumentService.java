@@ -9,6 +9,7 @@ import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
 import com.wooteco.wiki.global.exception.WikiException;
+import com.wooteco.wiki.graph.service.DocumentReferenceSyncService;
 import com.wooteco.wiki.history.service.HistoryService;
 import com.wooteco.wiki.organizationdocument.dto.response.OrganizationDocumentResponse;
 import com.wooteco.wiki.organizationdocument.service.DocumentOrganizationLinkService;
@@ -29,16 +30,18 @@ public class CrewDocumentService {
     private final CrewDocumentRepository crewDocumentRepository;
     private final DocumentRepository documentRepository;
     private final HistoryService historyService;
+    private final DocumentReferenceSyncService documentReferenceSyncService;
     private final Random random;
 
     @Transactional
     public void deleteByUuid(UUID documentUuid) {
-        CrewDocument crewDocument = crewDocumentRepository.findByUuid(documentUuid)
-            .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
+        CrewDocument crewDocument = crewDocumentRepository.findByUuidForUpdate(documentUuid)
+                .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
 
         documentOrganizationLinkService.unlinkAll(crewDocument);
+        documentReferenceSyncService.deleteAllByDocument(crewDocument);
 
-        documentRepository.deleteByUuid(documentUuid);
+        documentRepository.delete(crewDocument);
     }
 
     @Transactional
@@ -51,6 +54,7 @@ public class CrewDocumentService {
         CrewDocument crewDocument = request.toCrewDocument();
         CrewDocument savedDocument = crewDocumentRepository.save(crewDocument);
         historyService.save(savedDocument);
+        documentReferenceSyncService.synchronize(savedDocument);
         return mapToResponse(savedDocument);
     }
 
@@ -85,7 +89,7 @@ public class CrewDocumentService {
             UUID uuid,
             DocumentUpdateRequest request
     ) {
-        CrewDocument crewDocument = crewDocumentRepository.findByUuid(uuid)
+        CrewDocument crewDocument = crewDocumentRepository.findByUuidForUpdate(uuid)
                 .orElseThrow(() -> new WikiException(ErrorCode.DOCUMENT_NOT_FOUND));
 
         Document updateData = crewDocument.update(
@@ -96,6 +100,7 @@ public class CrewDocumentService {
                 LocalDateTime.now()
         );
         historyService.save(updateData);
+        documentReferenceSyncService.synchronize(crewDocument);
         return mapToResponse(crewDocument);
     }
 
