@@ -236,6 +236,65 @@ class CrewGraphQueryServiceTest {
         }
 
         @Test
+        @DisplayName("저장 방향과 무관하게 UUID 순서로 정규화한 간선을 정렬해 반환한다.")
+        void findByGeneration_success_byNormalizedEdgeOrder() {
+            // given
+            UUID firstCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID secondCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            UUID thirdCrewUuid = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            CrewDocument firstCrew = saveCrewDocument(
+                    "가람(8기)",
+                    "contents",
+                    firstCrewUuid
+            );
+            CrewDocument secondCrew = saveCrewDocument(
+                    "나래(8기)",
+                    "contents",
+                    secondCrewUuid
+            );
+            CrewDocument thirdCrew = saveCrewDocument(
+                    "다온(8기)",
+                    "contents",
+                    thirdCrewUuid
+            );
+            saveLink(firstCrew, generation);
+            saveLink(secondCrew, generation);
+            saveLink(thirdCrew, generation);
+            saveReference(thirdCrew, firstCrew);
+            saveReference(secondCrew, thirdCrew);
+            saveReference(firstCrew, secondCrew);
+
+            // when
+            CrewGraphResponse response = crewGraphQueryService.findByGeneration("8기");
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(response.edges())
+                        .containsExactly(
+                                new GraphEdgeResponse(
+                                        firstCrewUuid,
+                                        secondCrewUuid,
+                                        GraphEdgeType.REFERENCE
+                                ),
+                                new GraphEdgeResponse(
+                                        firstCrewUuid,
+                                        thirdCrewUuid,
+                                        GraphEdgeType.REFERENCE
+                                ),
+                                new GraphEdgeResponse(
+                                        secondCrewUuid,
+                                        thirdCrewUuid,
+                                        GraphEdgeType.REFERENCE
+                                )
+                        );
+                softly.assertThat(response.edges())
+                        .extracting(GraphEdgeResponse::type)
+                        .containsOnly(GraphEdgeType.REFERENCE);
+            });
+        }
+
+        @Test
         @DisplayName("현재 기수의 다른 크루 문서를 가리키지 않는 참조는 간선에서 제외한다.")
         void findByGeneration_success_byInvalidReferenceTargets() {
             // given
