@@ -6,13 +6,15 @@ import com.wooteco.wiki.graph.dto.CrewGraphResponse;
 import com.wooteco.wiki.graph.dto.GraphEdgeResponse;
 import com.wooteco.wiki.graph.dto.GraphEdgeType;
 import com.wooteco.wiki.graph.dto.GraphNodeResponse;
+import com.wooteco.wiki.graph.repository.CrewGraphNodeReadModel;
 import com.wooteco.wiki.graph.repository.CrewGraphQueryRepository;
-import com.wooteco.wiki.graph.repository.CrewGraphReadModel;
+import com.wooteco.wiki.graph.repository.DocumentReferenceReadModel;
+import com.wooteco.wiki.graph.repository.DocumentReferenceRepository;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -26,23 +28,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class CrewGraphQueryService {
 
     private final CrewGraphQueryRepository crewGraphQueryRepository;
+    private final DocumentReferenceRepository documentReferenceRepository;
     private final OrganizationDocumentRepository organizationDocumentRepository;
-    private final CrewDocumentReferenceExtractor crewDocumentReferenceExtractor;
 
     @Transactional(readOnly = true)
     public CrewGraphResponse findByGeneration(String generation) {
         return findByGeneration(generation, null);
     }
 
+    // 본문을 읽어 참조를 파싱하지 않고 저장된 node와 reference 조회 결과로 응답을 조립한다.
     @Transactional(readOnly = true)
     public CrewGraphResponse findByGeneration(
             String generation,
             UUID organizationDocumentUuid
     ) {
         validateGeneration(generation);
-        List<CrewGraphReadModel> readModels = crewGraphQueryRepository.findAllCrewDocumentsByGenerationTitle(generation);
-        List<GraphNodeResponse> nodes = new ArrayList<>(createCrewNodes(readModels));
-        List<GraphEdgeResponse> edges = new ArrayList<>(createReferenceEdges(readModels));
+        List<CrewGraphNodeReadModel> nodeReadModels = crewGraphQueryRepository
+                .findAllGraphNodesByGenerationTitle(generation);
+        List<DocumentReferenceReadModel> referenceReadModels = documentReferenceRepository
+                .findAllReadModelsByGenerationTitle(generation);
+        List<GraphNodeResponse> nodes = new ArrayList<>(createCrewNodes(nodeReadModels));
+        List<GraphEdgeResponse> edges = new ArrayList<>(createReferenceEdges(referenceReadModels));
         addOrganizationGraphIfSelected(
                 generation,
                 organizationDocumentUuid,
@@ -58,23 +64,23 @@ public class CrewGraphQueryService {
         }
     }
 
-    private List<GraphNodeResponse> createCrewNodes(List<CrewGraphReadModel> readModels) {
+    private List<GraphNodeResponse> createCrewNodes(List<CrewGraphNodeReadModel> nodeReadModels) {
         List<GraphNodeResponse> nodes = new ArrayList<>();
-        for (CrewGraphReadModel readModel : readModels) {
+        for (CrewGraphNodeReadModel nodeReadModel : nodeReadModels) {
             GraphNodeResponse node = GraphNodeResponse.fromCrewDocument(
-                    readModel.documentUuid(),
-                    readModel.title()
+                    nodeReadModel.documentUuid(),
+                    nodeReadModel.title()
             );
             nodes.add(node);
         }
         return List.copyOf(nodes);
     }
 
-    private List<GraphEdgeResponse> createReferenceEdges(List<CrewGraphReadModel> readModels) {
-        Set<UUID> nodeDocumentUuids = createCrewDocumentUuids(readModels);
-        Set<GraphEdgeResponse> edges = new HashSet<>();
-        for (CrewGraphReadModel readModel : readModels) {
-            addReferenceEdges(readModel, nodeDocumentUuids, edges);
+    // DB는 방향성 참조를 저장하지만 API는 UUID가 작은 문서를 source로 둔 무방향 edge 하나만 반환한다.
+    private List<GraphEdgeResponse> createReferenceEdges(List<DocumentReferenceReadModel> referenceReadModels) {
+        Set<GraphEdgeResponse> edges = new LinkedHashSet<>();
+        for (DocumentReferenceReadModel referenceReadModel : referenceReadModels) {
+            addReferenceEdgeIfValid(referenceReadModel, edges);
         }
         List<GraphEdgeResponse> sortedEdges = new ArrayList<>(edges);
         sortedEdges.sort(Comparator
@@ -83,44 +89,16 @@ public class CrewGraphQueryService {
         return List.copyOf(sortedEdges);
     }
 
-    private Set<UUID> createCrewDocumentUuids(List<CrewGraphReadModel> readModels) {
-        Set<UUID> documentUuids = new HashSet<>();
-        for (CrewGraphReadModel readModel : readModels) {
-            documentUuids.add(readModel.documentUuid());
-        }
-        return documentUuids;
-    }
-
-    private void addReferenceEdges(
-            CrewGraphReadModel sourceDocument,
-            Set<UUID> nodeDocumentUuids,
-            Set<GraphEdgeResponse> edges
-    ) {
-        List<UUID> referencedDocumentUuids = crewDocumentReferenceExtractor.extract(sourceDocument.contents());
-        for (UUID targetDocumentUuid : referencedDocumentUuids) {
-            addReferenceEdgeIfValid(
-                    sourceDocument.documentUuid(),
-                    targetDocumentUuid,
-                    nodeDocumentUuids,
-                    edges
-            );
-        }
-    }
-
     private void addReferenceEdgeIfValid(
-            UUID sourceDocumentUuid,
-            UUID targetDocumentUuid,
-            Set<UUID> nodeDocumentUuids,
+            DocumentReferenceReadModel referenceReadModel,
             Set<GraphEdgeResponse> edges
     ) {
+        UUID sourceDocumentUuid = referenceReadModel.sourceDocumentUuid();
+        UUID targetDocumentUuid = referenceReadModel.targetDocumentUuid();
         if (sourceDocumentUuid.equals(targetDocumentUuid)) {
             return;
         }
-        if (!nodeDocumentUuids.contains(targetDocumentUuid)) {
-            return;
-        }
-        GraphEdgeResponse edge = createReferenceEdge(sourceDocumentUuid, targetDocumentUuid);
-        edges.add(edge);
+        edges.add(createReferenceEdge(sourceDocumentUuid, targetDocumentUuid));
     }
 
     private GraphEdgeResponse createReferenceEdge(
