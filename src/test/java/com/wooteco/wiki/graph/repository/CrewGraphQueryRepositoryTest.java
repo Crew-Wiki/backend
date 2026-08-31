@@ -1,6 +1,7 @@
 package com.wooteco.wiki.graph.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
@@ -33,6 +34,38 @@ class CrewGraphQueryRepositoryTest {
 
     @Autowired
     private DocumentOrganizationLinkRepository documentOrganizationLinkRepository;
+
+    @Nested
+    @DisplayName("기수에 연결된 그래프 노드를 조회할 때")
+    class FindAllGraphNodesByGenerationTitle {
+
+        @Test
+        @DisplayName("해당 기수의 크루 문서만 title 순으로 반환한다.")
+        void findAllGraphNodesByGenerationTitle_success_byCrewDocumentsInGenerationSortedByTitle() {
+            // given
+            OrganizationDocument eighthGeneration = saveOrganizationDocument("8기");
+            OrganizationDocument seventhGeneration = saveOrganizationDocument("7기");
+            CrewDocument firstEighthCrew = saveCrewDocument("가람(8기)");
+            CrewDocument secondEighthCrew = saveCrewDocument("나래(8기)");
+            CrewDocument seventhCrew = saveCrewDocument("다온(7기)");
+            saveCrewDocument("라온(미연결)");
+            saveLink(firstEighthCrew, eighthGeneration);
+            saveLink(secondEighthCrew, eighthGeneration);
+            saveLink(seventhCrew, seventhGeneration);
+
+            // when
+            List<CrewGraphNodeReadModel> nodes = crewGraphQueryRepository
+                    .findAllGraphNodesByGenerationTitle("8기");
+
+            // then
+            assertThat(nodes)
+                    .extracting(CrewGraphNodeReadModel::documentUuid, CrewGraphNodeReadModel::title)
+                    .containsExactly(
+                            tuple(firstEighthCrew.getUuid(), "가람(8기)"),
+                            tuple(secondEighthCrew.getUuid(), "나래(8기)")
+                    );
+        }
+    }
 
     @Nested
     @DisplayName("기수와 조직에 모두 연결된 크루 문서 UUID를 조회할 때")

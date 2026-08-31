@@ -1,7 +1,9 @@
 package com.wooteco.wiki.graph.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.assertj.core.groups.Tuple.tuple;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.domain.Document;
@@ -11,8 +13,11 @@ import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.document.repository.DocumentRepository;
 import com.wooteco.wiki.graph.domain.DocumentReference;
 import com.wooteco.wiki.graph.fixture.DocumentReferenceFixture;
+import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
+import com.wooteco.wiki.organizationdocument.fixture.DocumentOrganizationLinkFixture;
 import com.wooteco.wiki.organizationdocument.fixture.OrganizationDocumentFixture;
+import com.wooteco.wiki.organizationdocument.repository.DocumentOrganizationLinkRepository;
 import com.wooteco.wiki.organizationdocument.repository.OrganizationDocumentRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -34,6 +39,9 @@ class DocumentReferenceRepositoryTest {
 
     @Autowired
     private OrganizationDocumentRepository organizationDocumentRepository;
+
+    @Autowired
+    private DocumentOrganizationLinkRepository documentOrganizationLinkRepository;
 
     @Autowired
     private DocumentRepository documentRepository;
@@ -184,6 +192,75 @@ class DocumentReferenceRepositoryTest {
     }
 
     @Nested
+    class FindAllReadModelsByGenerationTitle {
+
+        @Test
+        void findAllReadModelsByGenerationTitle_success_byDirectionalReferencesSortedByUuid() {
+            // given
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            UUID firstSourceUuid = UUID.fromString("00000000-0000-0000-0000-000000000001");
+            UUID secondSourceUuid = UUID.fromString("00000000-0000-0000-0000-000000000002");
+            CrewDocument firstSourceDocument = saveCrewDocument("first-source", firstSourceUuid);
+            CrewDocument secondSourceDocument = saveCrewDocument("second-source", secondSourceUuid);
+            saveLink(firstSourceDocument, generation);
+            saveLink(secondSourceDocument, generation);
+            saveAndFlushReference(firstSourceDocument, secondSourceDocument);
+            saveAndFlushReference(secondSourceDocument, firstSourceDocument);
+
+            // when
+            List<DocumentReferenceReadModel> readModels = documentReferenceRepository
+                    .findAllReadModelsByGenerationTitle("8기");
+
+            // then
+            assertThat(readModels)
+                    .extracting(
+                            DocumentReferenceReadModel::sourceDocumentUuid,
+                            DocumentReferenceReadModel::targetDocumentUuid
+                    )
+                    .containsExactly(
+                            tuple(firstSourceUuid, secondSourceUuid),
+                            tuple(secondSourceUuid, firstSourceUuid)
+                    );
+        }
+
+        @Test
+        void findAllReadModelsByGenerationTitle_success_bySameGenerationCrewMembership() {
+            // given
+            OrganizationDocument eighthGeneration = saveOrganizationDocument("8기");
+            OrganizationDocument seventhGeneration = saveOrganizationDocument("7기");
+            CrewDocument sourceDocument = saveCrewDocument("source");
+            CrewDocument otherGenerationSourceDocument = saveCrewDocument("other-generation-source");
+            CrewDocument sameGenerationTargetDocument = saveCrewDocument("same-generation-target");
+            CrewDocument otherGenerationTargetDocument = saveCrewDocument("other-generation-target");
+            CrewDocument unlinkedTargetDocument = saveCrewDocument("unlinked-target");
+            OrganizationDocument organizationTargetDocument = saveOrganizationDocument("organization-target");
+            saveLink(sourceDocument, eighthGeneration);
+            saveLink(otherGenerationSourceDocument, seventhGeneration);
+            saveLink(sameGenerationTargetDocument, eighthGeneration);
+            saveLink(otherGenerationTargetDocument, seventhGeneration);
+            saveAndFlushReference(sourceDocument, sameGenerationTargetDocument);
+            saveAndFlushReference(sourceDocument, otherGenerationTargetDocument);
+            saveAndFlushReference(otherGenerationSourceDocument, sameGenerationTargetDocument);
+            saveAndFlushReference(sourceDocument, unlinkedTargetDocument);
+            saveAndFlushReference(sourceDocument, organizationTargetDocument);
+
+            // when
+            List<DocumentReferenceReadModel> readModels = documentReferenceRepository
+                    .findAllReadModelsByGenerationTitle("8기");
+
+            // then
+            assertThat(readModels)
+                    .extracting(
+                            DocumentReferenceReadModel::sourceDocumentUuid,
+                            DocumentReferenceReadModel::targetDocumentUuid
+                    )
+                    .containsExactly(
+                            tuple(sourceDocument.getUuid(), sameGenerationTargetDocument.getUuid())
+                    );
+        }
+    }
+
+    @Nested
     class DeleteAllBySourceDocument {
 
         @Test
@@ -270,12 +347,16 @@ class DocumentReferenceRepositoryTest {
     }
 
     private CrewDocument saveCrewDocument(String title) {
+        return saveCrewDocument(title, UUID.randomUUID());
+    }
+
+    private CrewDocument saveCrewDocument(String title, UUID uuid) {
         CrewDocument crewDocument = CrewDocumentFixture.createCrewDocument(
                 title,
                 "contents",
                 "writer",
                 10L,
-                UUID.randomUUID()
+                uuid
         );
         return crewDocumentRepository.save(crewDocument);
     }
@@ -289,6 +370,17 @@ class DocumentReferenceRepositoryTest {
                 UUID.randomUUID()
         );
         return organizationDocumentRepository.save(organizationDocument);
+    }
+
+    private void saveLink(
+            CrewDocument crewDocument,
+            OrganizationDocument organizationDocument
+    ) {
+        DocumentOrganizationLink link = DocumentOrganizationLinkFixture.create(
+                crewDocument,
+                organizationDocument
+        );
+        documentOrganizationLinkRepository.save(link);
     }
 
     private DocumentReference saveReference(

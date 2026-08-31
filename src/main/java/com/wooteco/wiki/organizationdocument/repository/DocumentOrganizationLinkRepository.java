@@ -3,6 +3,7 @@ package com.wooteco.wiki.organizationdocument.repository;
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.repository.GenerationCrewOrganizationReadModel;
 import com.wooteco.wiki.document.repository.GenerationCrewQueryRepository;
+import com.wooteco.wiki.graph.repository.CrewGraphNodeReadModel;
 import com.wooteco.wiki.graph.repository.CrewGraphQueryRepository;
 import com.wooteco.wiki.graph.repository.CrewGraphReadModel;
 import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
@@ -54,6 +55,21 @@ public interface DocumentOrganizationLinkRepository extends
             )
             """)
     List<GenerationCrewOrganizationReadModel> findAllByGenerationTitle(
+            @Param("generationTitle") String generationTitle
+    );
+
+    @Override
+    @Query("""
+            SELECT new com.wooteco.wiki.graph.repository.CrewGraphNodeReadModel(
+                crewDocument.uuid,
+                crewDocument.title
+            )
+            FROM DocumentOrganizationLink documentOrganizationLink
+            JOIN documentOrganizationLink.crewDocument crewDocument
+            WHERE documentOrganizationLink.organizationDocument.title = :generationTitle
+            ORDER BY crewDocument.title
+            """)
+    List<CrewGraphNodeReadModel> findAllGraphNodesByGenerationTitle(
             @Param("generationTitle") String generationTitle
     );
 
