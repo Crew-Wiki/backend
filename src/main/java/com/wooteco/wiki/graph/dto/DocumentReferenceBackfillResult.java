@@ -11,7 +11,6 @@ public record DocumentReferenceBackfillResult(
         int removedCount,
         int excludedSelfCount,
         int excludedMissingCount,
-        int mismatchCount,
         List<DocumentReferenceBackfillFailure> failures
 ) {
 
@@ -31,7 +30,6 @@ public record DocumentReferenceBackfillResult(
                 sum(itemResults, DocumentReferenceBackfillItemResult::removedCount),
                 sum(itemResults, DocumentReferenceBackfillItemResult::excludedSelfCount),
                 sum(itemResults, DocumentReferenceBackfillItemResult::excludedMissingCount),
-                countMismatched(itemResults),
                 failures
         );
     }
@@ -43,11 +41,5 @@ public record DocumentReferenceBackfillResult(
         return itemResults.stream()
                 .mapToInt(countExtractor)
                 .sum();
-    }
-
-    private static int countMismatched(List<DocumentReferenceBackfillItemResult> itemResults) {
-        return (int) itemResults.stream()
-                .filter(DocumentReferenceBackfillItemResult::mismatched)
-                .count();
     }
 }

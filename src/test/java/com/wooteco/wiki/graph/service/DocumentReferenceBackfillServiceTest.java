@@ -65,7 +65,6 @@ class DocumentReferenceBackfillServiceTest {
                 softly.assertThat(result.succeededCount()).isZero();
                 softly.assertThat(result.failedCount()).isZero();
                 softly.assertThat(result.addedCount()).isZero();
-                softly.assertThat(result.mismatchCount()).isZero();
                 softly.assertThat(result.failures()).isEmpty();
             });
         }
@@ -126,7 +125,6 @@ class DocumentReferenceBackfillServiceTest {
                 softly.assertThat(result.failedCount()).isZero();
                 softly.assertThat(result.addedCount()).isZero();
                 softly.assertThat(result.removedCount()).isZero();
-                softly.assertThat(result.mismatchCount()).isZero();
                 softly.assertThat(findTargetDocumentUuidsOf(sourceDocuments))
                         .containsOnly(Set.of(targetDocument.getUuid()));
             });
@@ -198,7 +196,6 @@ class DocumentReferenceBackfillServiceTest {
             softly.assertThat(result.failedCount()).isZero();
             softly.assertThat(result.addedCount()).isEqualTo(SOURCE_DOCUMENT_COUNT);
             softly.assertThat(result.removedCount()).isZero();
-            softly.assertThat(result.mismatchCount()).isZero();
             softly.assertThat(result.failures()).isEmpty();
             softly.assertThat(findTargetDocumentUuidsOf(sourceDocuments))
                     .hasSize(SOURCE_DOCUMENT_COUNT)
