@@ -106,6 +106,7 @@ jobs:
           CONTAINER_NAME=crew-wiki
           HOST_PORT=${{ secrets.PROD_HOST_PORT || '8080' }}
           SPRING_PROFILES_ACTIVE=prod
+          GRAPH_READ_SOURCE=${{ secrets.PROD_GRAPH_READ_SOURCE || 'legacy' }}
           LOG_PATH=${{ secrets.LOG_PATH }}
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           JWT_SECRET_EXPIRE_LENGTH=${{ secrets.JWT_SECRET_EXPIRE_LENGTH }}

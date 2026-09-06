@@ -1,3 +1,9 @@
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
+
+# legacy: 요청 시 본문을 파싱해 참조를 추출한다. backfill 이전 데이터에서도 안전하다.
+# persisted: 저장된 document_reference를 조회한다. backfill 완주 이후에만 전환한다.
+graph:
+  read:
+    source: ${GRAPH_READ_SOURCE:legacy}

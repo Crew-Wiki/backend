@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import com.wooteco.wiki.document.domain.CrewDocument;
+import com.wooteco.wiki.document.domain.Document;
 import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.CrewDocumentRepository;
 import com.wooteco.wiki.global.exception.ErrorCode;
@@ -13,6 +14,8 @@ import com.wooteco.wiki.graph.dto.GraphEdgeResponse;
 import com.wooteco.wiki.graph.dto.GraphEdgeType;
 import com.wooteco.wiki.graph.dto.GraphNodeResponse;
 import com.wooteco.wiki.graph.dto.GraphNodeType;
+import com.wooteco.wiki.graph.fixture.DocumentReferenceFixture;
+import com.wooteco.wiki.graph.repository.DocumentReferenceRepository;
 import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.fixture.DocumentOrganizationLinkFixture;
@@ -26,9 +29,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@TestPropertySource(properties = "graph.read.source=persisted")
 class CrewGraphQueryServiceTest {
 
     @Autowired
@@ -42,6 +47,9 @@ class CrewGraphQueryServiceTest {
 
     @Autowired
     private DocumentOrganizationLinkRepository documentOrganizationLinkRepository;
+
+    @Autowired
+    private DocumentReferenceRepository documentReferenceRepository;
 
     @Nested
     @DisplayName("기수별 크루 그래프를 조회할 때")
@@ -92,7 +100,7 @@ class CrewGraphQueryServiceTest {
             );
             CrewDocument firstCrew = saveCrewDocument(
                     "가람(8기)",
-                    "https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222",
+                    "contents",
                     firstCrewUuid
             );
             CrewDocument secondCrew = saveCrewDocument(
@@ -103,6 +111,7 @@ class CrewGraphQueryServiceTest {
             saveLink(firstCrew, generation);
             saveLink(firstCrew, backend);
             saveLink(secondCrew, generation);
+            saveReference(firstCrew, secondCrew);
 
             // when
             CrewGraphResponse response = crewGraphQueryService.findByGeneration(
@@ -200,19 +209,18 @@ class CrewGraphQueryServiceTest {
             OrganizationDocument generation = saveOrganizationDocument("8기");
             CrewDocument firstCrew = saveCrewDocument(
                     "가람(8기)",
-                    """
-                            [나래](https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222)
-                            https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222
-                            """,
+                    "contents",
                     firstCrewUuid
             );
             CrewDocument secondCrew = saveCrewDocument(
                     "나래(8기)",
-                    "https://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111",
+                    "contents",
                     secondCrewUuid
             );
             saveLink(firstCrew, generation);
             saveLink(secondCrew, generation);
+            saveReference(firstCrew, secondCrew);
+            saveReference(secondCrew, firstCrew);
 
             // when
             CrewGraphResponse response = crewGraphQueryService.findByGeneration("8기");
@@ -230,12 +238,70 @@ class CrewGraphQueryServiceTest {
         }
 
         @Test
+        @DisplayName("저장 방향과 무관하게 UUID 순서로 정규화한 간선을 정렬해 반환한다.")
+        void findByGeneration_success_byNormalizedEdgeOrder() {
+            // given
+            UUID firstCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
+            UUID secondCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
+            UUID thirdCrewUuid = UUID.fromString("33333333-3333-3333-3333-333333333333");
+            OrganizationDocument generation = saveOrganizationDocument("8기");
+            CrewDocument firstCrew = saveCrewDocument(
+                    "가람(8기)",
+                    "contents",
+                    firstCrewUuid
+            );
+            CrewDocument secondCrew = saveCrewDocument(
+                    "나래(8기)",
+                    "contents",
+                    secondCrewUuid
+            );
+            CrewDocument thirdCrew = saveCrewDocument(
+                    "다온(8기)",
+                    "contents",
+                    thirdCrewUuid
+            );
+            saveLink(firstCrew, generation);
+            saveLink(secondCrew, generation);
+            saveLink(thirdCrew, generation);
+            saveReference(thirdCrew, firstCrew);
+            saveReference(secondCrew, thirdCrew);
+            saveReference(firstCrew, secondCrew);
+
+            // when
+            CrewGraphResponse response = crewGraphQueryService.findByGeneration("8기");
+
+            // then
+            assertSoftly(softly -> {
+                softly.assertThat(response.edges())
+                        .containsExactly(
+                                new GraphEdgeResponse(
+                                        firstCrewUuid,
+                                        secondCrewUuid,
+                                        GraphEdgeType.REFERENCE
+                                ),
+                                new GraphEdgeResponse(
+                                        firstCrewUuid,
+                                        thirdCrewUuid,
+                                        GraphEdgeType.REFERENCE
+                                ),
+                                new GraphEdgeResponse(
+                                        secondCrewUuid,
+                                        thirdCrewUuid,
+                                        GraphEdgeType.REFERENCE
+                                )
+                        );
+                softly.assertThat(response.edges())
+                        .extracting(GraphEdgeResponse::type)
+                        .containsOnly(GraphEdgeType.REFERENCE);
+            });
+        }
+
+        @Test
         @DisplayName("현재 기수의 다른 크루 문서를 가리키지 않는 참조는 간선에서 제외한다.")
         void findByGeneration_success_byInvalidReferenceTargets() {
             // given
             UUID sourceCrewUuid = UUID.fromString("11111111-1111-1111-1111-111111111111");
             UUID otherGenerationCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
-            UUID missingDocumentUuid = UUID.fromString("33333333-3333-3333-3333-333333333333");
             UUID organizationDocumentUuid = UUID.fromString("44444444-4444-4444-4444-444444444444");
             OrganizationDocument eighthGeneration = saveOrganizationDocument("8기");
             OrganizationDocument seventhGeneration = saveOrganizationDocument(
@@ -244,12 +310,7 @@ class CrewGraphQueryServiceTest {
             );
             CrewDocument sourceCrew = saveCrewDocument(
                     "가람(8기)",
-                    """
-                            https://crew-wiki.site/wiki/11111111-1111-1111-1111-111111111111
-                            https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222
-                            https://crew-wiki.site/wiki/33333333-3333-3333-3333-333333333333
-                            https://crew-wiki.site/wiki/44444444-4444-4444-4444-444444444444
-                            """,
+                    "contents",
                     sourceCrewUuid
             );
             CrewDocument otherGenerationCrew = saveCrewDocument(
@@ -259,6 +320,9 @@ class CrewGraphQueryServiceTest {
             );
             saveLink(sourceCrew, eighthGeneration);
             saveLink(otherGenerationCrew, seventhGeneration);
+            saveReference(sourceCrew, sourceCrew);
+            saveReference(sourceCrew, otherGenerationCrew);
+            saveReference(sourceCrew, seventhGeneration);
 
             // when
             CrewGraphResponse response = crewGraphQueryService.findByGeneration("8기");
@@ -341,6 +405,13 @@ class CrewGraphQueryServiceTest {
                 uuid
         );
         return organizationDocumentRepository.save(organizationDocument);
+    }
+
+    private void saveReference(
+            CrewDocument sourceDocument,
+            Document targetDocument
+    ) {
+        documentReferenceRepository.save(DocumentReferenceFixture.create(sourceDocument, targetDocument));
     }
 
     private void saveLink(

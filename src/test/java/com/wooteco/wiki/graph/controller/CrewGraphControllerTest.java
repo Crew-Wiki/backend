@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.hasSize;
 import com.wooteco.wiki.document.domain.CrewDocument;
 import com.wooteco.wiki.document.fixture.CrewDocumentFixture;
 import com.wooteco.wiki.document.repository.CrewDocumentRepository;
+import com.wooteco.wiki.graph.fixture.DocumentReferenceFixture;
+import com.wooteco.wiki.graph.repository.DocumentReferenceRepository;
 import com.wooteco.wiki.organizationdocument.domain.DocumentOrganizationLink;
 import com.wooteco.wiki.organizationdocument.domain.OrganizationDocument;
 import com.wooteco.wiki.organizationdocument.fixture.DocumentOrganizationLinkFixture;
@@ -23,9 +25,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@TestPropertySource(properties = "graph.read.source=persisted")
 class CrewGraphControllerTest {
 
     @LocalServerPort
@@ -39,6 +43,9 @@ class CrewGraphControllerTest {
 
     @Autowired
     private DocumentOrganizationLinkRepository documentOrganizationLinkRepository;
+
+    @Autowired
+    private DocumentReferenceRepository documentReferenceRepository;
 
     @BeforeEach
     void setUp() {
@@ -57,7 +64,7 @@ class CrewGraphControllerTest {
             UUID secondCrewUuid = UUID.fromString("22222222-2222-2222-2222-222222222222");
             CrewDocument firstCrew = saveCrewDocument(
                     "가람(8기)",
-                    "https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222",
+                    "contents",
                     firstCrewUuid
             );
             CrewDocument secondCrew = saveCrewDocument(
@@ -68,6 +75,7 @@ class CrewGraphControllerTest {
             OrganizationDocument generation = saveOrganizationDocument("8기");
             saveLink(firstCrew, generation);
             saveLink(secondCrew, generation);
+            saveReference(firstCrew, secondCrew);
 
             // when & then
             RestAssured.given().log().all()
@@ -98,7 +106,7 @@ class CrewGraphControllerTest {
             UUID organizationDocumentUuid = UUID.fromString("33333333-3333-3333-3333-333333333333");
             CrewDocument firstCrew = saveCrewDocument(
                     "가람(8기)",
-                    "https://crew-wiki.site/wiki/22222222-2222-2222-2222-222222222222",
+                    "contents",
                     firstCrewUuid
             );
             CrewDocument secondCrew = saveCrewDocument(
@@ -114,6 +122,7 @@ class CrewGraphControllerTest {
             saveLink(firstCrew, generation);
             saveLink(firstCrew, backend);
             saveLink(secondCrew, generation);
+            saveReference(firstCrew, secondCrew);
 
             // when & then
             RestAssured.given().log().all()
@@ -251,6 +260,13 @@ class CrewGraphControllerTest {
                 uuid
         );
         return organizationDocumentRepository.save(organizationDocument);
+    }
+
+    private void saveReference(
+            CrewDocument sourceDocument,
+            CrewDocument targetDocument
+    ) {
+        documentReferenceRepository.save(DocumentReferenceFixture.create(sourceDocument, targetDocument));
     }
 
     private void saveLink(
