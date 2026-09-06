@@ -27,6 +27,7 @@ import org.springframework.test.context.TestPropertySource;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {
+        "graph.read.source=persisted",
         "spring.datasource.url=jdbc:h2:mem:graph-query-count",
         "spring.jpa.properties.hibernate.session_factory.statement_inspector="
                 + "com.wooteco.wiki.graph.service.RecordingStatementInspector"
